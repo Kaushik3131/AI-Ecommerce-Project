@@ -37,10 +37,8 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Only use SanityAppProvider for inventory and orders pages
-  const needsSanityProvider =
-    pathname.startsWith("/admin/inventory") ||
-    pathname.startsWith("/admin/orders");
+  // Use SanityAppProvider for all admin pages (they all use Sanity SDK)
+  const needsSanityProvider = pathname.startsWith("/admin");
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
