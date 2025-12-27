@@ -11,9 +11,10 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { Providers } from "@/components/providers/Providers";
+// import { Providers } from "@/components/providers/Providers";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SanityClientProvider } from "@/components/admin/SanityClientProvider";
 
 const navItems = [
   {
@@ -38,7 +39,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Use SanityAppProvider for all admin pages (they all use Sanity SDK)
-  const needsSanityProvider = pathname.startsWith("/admin");
+  // const needsSanityProvider = pathname.startsWith("/admin");
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -158,7 +159,8 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <main className="flex-1 pt-14 lg:ml-64 lg:pt-0">
         <div className="p-4 lg:p-8">
-          {needsSanityProvider ? <Providers>{children}</Providers> : children}
+          {/* {needsSanityProvider ? <Providers>{children}</Providers> : children} */}
+          <SanityClientProvider>{children}</SanityClientProvider>
         </div>
       </main>
     </div>
