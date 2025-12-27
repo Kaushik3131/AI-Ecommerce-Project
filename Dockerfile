@@ -40,6 +40,14 @@ ENV NEXT_PUBLIC_SANITY_API_VERSION=$NEXT_PUBLIC_SANITY_API_VERSION
 ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 
+# Server-side env vars needed during build (for API route analysis)
+# Use placeholder values - real values will be set at runtime
+ENV CLERK_SECRET_KEY="build-placeholder"
+ENV SANITY_API_TOKEN="build-placeholder"
+ENV STRIPE_SECRET_KEY="build-placeholder"
+ENV STRIPE_WEBHOOK_SECRET="build-placeholder"
+ENV GOOGLE_GENERATIVE_AI_API_KEY="build-placeholder"
+
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Generate Sanity types (optional, can be done in CI/CD)
