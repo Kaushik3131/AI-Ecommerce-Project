@@ -1,0 +1,79 @@
+name: Build & Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "sanity/**"
+      - "public/**"
+      - "Dockerfile"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "next.config.ts"
+      - ".github/workflows/deploy.yml"
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  SERVICE_NAME: ai-ecommerce-app
+  REPOSITORY: ecommerce-repo
+  IMAGE: ai-ecommerce-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------
+      # 1️⃣ Checkout source code
+      # -------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # 2️⃣ Authenticate to GCP
+      # -------------------------
+      - name: Authenticate to GCP
+        run: |
+          cat << 'EOF' > key.json
+          ${{ secrets.GCP_SA_KEY }}
+          EOF
+
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project $PROJECT_ID
+          gcloud config set run/region $REGION
+
+      # -------------------------
+      # 3️⃣ Build & Push Image (Cloud Build)
+      # -------------------------
+      - name: Run Cloud Build (cloudbuild.yaml)
+        run: |
+          trim() { echo "$1" | xargs; }
+          
+          gcloud builds submit . \
+            --config=cloudbuild.yaml \
+            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}'),_NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}'),_NEXT_PUBLIC_SANITY_PROJECT_ID=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}'),_NEXT_PUBLIC_SANITY_DATASET=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}'),_NEXT_PUBLIC_SANITY_API_VERSION=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}'),_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}'),_NEXT_PUBLIC_BASE_URL=$(trim '${{ secrets.NEXT_PUBLIC_BASE_URL }}')" \
+            --timeout=900s
+
+      # -------------------------
+      # 4️⃣ Deploy to Cloud Run
+      # -------------------------
+      # - name: Deploy to Cloud Run
+      #   run: |
+      #     trim() { echo "$1" | xargs; }
+          
+      #     gcloud run deploy $(trim '${{ env.SERVICE_NAME }}') \
+      #       --image $(trim '${{ env.REGION }}')-docker.pkg.dev/$(trim '${{ env.PROJECT_ID }}')/$(trim '${{ env.REPOSITORY }}')/$(trim '${{ env.IMAGE }}'):latest \
+      #       --platform managed \
+      #       --region $(trim '${{ env.REGION }}') \
+      #       --allow-unauthenticated \
+      #       --port 3000 \
+      #       --memory 1Gi \
+      #       --cpu 1 \
+      #       --min-instances 0 \
+      #       --max-instances 3 \
+      #       --set-env-vars "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}'),NEXT_PUBLIC_SANITY_PROJECT_ID=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}'),NEXT_PUBLIC_SANITY_DATASET=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}'),NEXT_PUBLIC_SANITY_API_VERSION=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}'),NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}'),NEXT_PUBLIC_BASE_URL=$(trim '${{ secrets.NEXT_PUBLIC_BASE_URL }}'),CLERK_SECRET_KEY=$(trim '${{ secrets.CLERK_SECRET_KEY }}'),SANITY_API_TOKEN=$(trim '${{ secrets.SANITY_API_TOKEN }}'),STRIPE_SECRET_KEY=$(trim '${{ secrets.STRIPE_SECRET_KEY }}'),STRIPE_WEBHOOK_SECRET=$(trim '${{ secrets.STRIPE_WEBHOOK_SECRET }}'),GOOGLE_GENERATIVE_AI_API_KEY=$(trim '${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}')"

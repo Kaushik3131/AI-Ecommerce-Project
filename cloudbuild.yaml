@@ -1,0 +1,22 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
+      - --build-arg
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${_NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_PROJECT_ID=${_NEXT_PUBLIC_SANITY_PROJECT_ID}
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_DATASET=${_NEXT_PUBLIC_SANITY_DATASET}
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_API_VERSION=${_NEXT_PUBLIC_SANITY_API_VERSION}
+      - --build-arg
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      - --build-arg
+      - NEXT_PUBLIC_BASE_URL=${_NEXT_PUBLIC_BASE_URL}
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
