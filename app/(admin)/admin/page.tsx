@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -19,6 +17,8 @@ import {
 } from "@/components/admin";
 
 export default function AdminDashboard() {
+  console.log("Admin dashboard rendering");
+
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const apply = useApplyDocumentActions();

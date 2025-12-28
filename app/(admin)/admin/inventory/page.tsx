@@ -20,6 +20,9 @@ import {
   ProductTableHeader,
 } from "@/components/admin";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 interface ProductListContentProps {
   filter?: string;
   onCreateProduct: () => void;

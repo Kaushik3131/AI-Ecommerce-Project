@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  // Prevent Sanity Studio from intercepting admin routes
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Explicitly handle admin routes first
+        {
+          source: "/admin/:path*",
+          destination: "/admin/:path*",
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default nextConfig;
