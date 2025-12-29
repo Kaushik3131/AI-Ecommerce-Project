@@ -539,19 +539,41 @@ git push origin main
 
 ## 🐛 Troubleshooting
 
-### **Common Issues**
+### **Comm
 
-**Issue**: Sanity Studio not loading
-- **Solution**: Check `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET`
+---
 
-**Issue**: Stripe webhook not working
-- **Solution**: Verify `STRIPE_WEBHOOK_SECRET` and webhook endpoint URL
+## ⚠️ Known Limitations
 
-**Issue**: AI chat not responding
-- **Solution**: Check `GOOGLE_GENERATIVE_AI_API_KEY` is valid
+### **Admin Panel Production Access**
 
-**Issue**: Cart not persisting
-- **Solution**: Check browser localStorage is enabled
+**Issue**: Admin mutations (updating inventory/orders) don't work on Cloud Run due to Sanity's client-side token security restrictions.
+
+**Symptoms**:
+- Admin panel works perfectly on `localhost`
+- On production (Cloud Run), updates "snap back" to original values
+- Browser console shows `403 Forbidden` errors from Sanity API
+
+**Root Cause**: 
+Sanity blocks client-side mutations with server tokens in production for security. The `@sanity/sdk-react` library is designed for Sanity's own authentication system, not custom API tokens.
+
+**Current Workarounds**:
+1. **Use admin panel locally**: Run `pnpm dev` and manage inventory/orders on `localhost:3000/admin`
+2. **Use Sanity Studio**: Access `/studio` on production - it works because it uses Sanity's authentication
+3. **Direct Sanity dashboard**: Manage content at `manage.sanity.io`
+
+**Proper Solution** (planned for future release):
+Refactor admin mutations to use Next.js server actions instead of client-side `@sanity/sdk-react` hooks. This involves:
+- Creating API routes for each mutation (update product, update order status, etc.)
+- Calling these routes from the admin UI
+- Server routes use `writeClient` with the API token (secure)
+
+**Impact**: 
+- ✅ Customer-facing features work perfectly (shop, checkout, orders)
+- ✅ Webhooks create orders successfully
+- ❌ Admin panel only works locally
+
+**Status**: Low priority - admin panel works locally, and Sanity Studio provides full production access.
 
 ---
 
