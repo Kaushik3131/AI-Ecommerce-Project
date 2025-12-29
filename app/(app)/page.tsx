@@ -12,6 +12,12 @@ import { ProductSection } from "@/components/app/ProductSection";
 import { CategoryTiles } from "@/components/app/CategoryTiles";
 import { FeaturedCarousel } from "@/components/app/FeaturedCarousel";
 import { FeaturedCarouselSkeleton } from "@/components/app/FeaturedCarouselSkeleton";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shop | AI-Ecom-Store",
+  description: "Premium furniture for your home",
+};
 
 interface PageProps {
   searchParams: Promise<{

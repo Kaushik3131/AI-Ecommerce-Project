@@ -3,7 +3,7 @@ import { SuccessClient } from "./SuccessClient";
 import { getCheckoutSession } from "@/lib/actions/checkout";
 
 export const metadata = {
-  title: "Order Confirmed | Furniture Shop",
+  title: "Order Confirmed | AI-Ecom-Store",
   description: "Your order has been placed successfully",
 };
 

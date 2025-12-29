@@ -1,7 +1,7 @@
 import { CheckoutClient } from "./CheckoutClient";
 
 export const metadata = {
-  title: "Checkout | Furniture Shop",
+  title: "Checkout | AI-Ecom-Store",
   description: "Complete your purchase",
 };
 

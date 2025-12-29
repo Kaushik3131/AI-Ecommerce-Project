@@ -10,9 +10,12 @@ import { formatPrice, formatDate, formatOrderNumber } from "@/lib/utils";
 import { StackedProductImages } from "@/components/app/StackedProductImages";
 
 export const metadata = {
-  title: "Your Orders | Furniture Shop",
+  title: "My Orders | AI-Ecom-Store",
   description: "View your order history",
 };
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function OrdersPage() {
   const { userId } = await auth();
