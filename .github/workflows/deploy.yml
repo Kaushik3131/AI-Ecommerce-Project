@@ -15,6 +15,7 @@ on:
       - "pnpm-lock.yaml"
       - "next.config.ts"
       - ".github/workflows/deploy.yml"
+  workflow_dispatch:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
