@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Grid2x2 } from "lucide-react";
 import type { ALL_CATEGORIES_QUERYResult } from "@/sanity.types";
 
@@ -14,13 +14,27 @@ export function CategoryTiles({
   categories,
   activeCategory,
 }: CategoryTilesProps) {
+  const router = useRouter();
+
+  const handleCategoryClick = (href: string) => {
+    router.push(href, { scroll: false });
+    // Scroll to products section after navigation
+    setTimeout(() => {
+      const productsSection = document.getElementById("products-section");
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
+  };
+
   return (
     <div className="relative">
       {/* Horizontal scrolling container - full width with edge padding */}
       <div className="flex gap-4 overflow-x-auto  py-4 pl-8 pr-4 sm:pl-12 sm:pr-6 lg:pl-10 lg:pr-8 scrollbar-hide">
         {/* All Products tile */}
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => handleCategoryClick("/")}
           className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 ${
             !activeCategory
               ? "ring-2 ring-amber-500 ring-offset-2 dark:ring-offset-zinc-900"
@@ -46,7 +60,7 @@ export function CategoryTiles({
               </span>
             </div>
           </div>
-        </Link>
+        </button>
 
         {/* Category tiles */}
         {categories.map((category) => {
@@ -54,9 +68,10 @@ export function CategoryTiles({
           const imageUrl = category.image?.asset?.url;
 
           return (
-            <Link
+            <button
               key={category._id}
-              href={`/?category=${category.slug}`}
+              type="button"
+              onClick={() => handleCategoryClick(`/?category=${category.slug}`)}
               className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 ${
                 isActive
                   ? "ring-2 ring-amber-500 ring-offset-2 dark:ring-offset-zinc-900"
@@ -96,7 +111,7 @@ export function CategoryTiles({
                   </div>
                 )}
               </div>
-            </Link>
+            </button>
           );
         })}
       </div>
