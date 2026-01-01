@@ -44,3 +44,5 @@ next-env.d.ts
 
 /STRIPE_TO_PHONEPE_MIGRATION.md
 /sample-data.ndjson
+/list-models.mjs
+/docker-compose.yml
