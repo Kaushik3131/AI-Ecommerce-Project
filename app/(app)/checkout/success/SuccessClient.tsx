@@ -15,11 +15,12 @@ interface SuccessClientProps {
     amountTotal?: number | null;
     paymentStatus: string;
     shippingAddress?: {
+      name?: string | null;
       line1?: string | null;
       line2?: string | null;
       city?: string | null;
       state?: string | null;
-      postal_code?: string | null;
+      postcode?: string | null;
       country?: string | null;
     } | null;
     lineItems?: {
@@ -27,6 +28,8 @@ interface SuccessClientProps {
       quantity?: number | null;
       amount: number;
     }[];
+    transactionId?: string | null;
+    paymentMethod?: string | null;
   };
 }
 
@@ -99,11 +102,11 @@ export function SuccessClient({ session }: SuccessClientProps) {
               Shipping to
             </h3>
             <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              {session.customerName && <p>{session.customerName}</p>}
+              {address.name && <p>{address.name}</p>}
               {address.line1 && <p>{address.line1}</p>}
               {address.line2 && <p>{address.line2}</p>}
               <p>
-                {[address.city, address.state, address.postal_code]
+                {[address.city, address.state, address.postcode]
                   .filter(Boolean)
                   .join(", ")}
               </p>
@@ -114,14 +117,32 @@ export function SuccessClient({ session }: SuccessClientProps) {
 
         {/* Payment Status */}
         <div className="border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-zinc-400" />
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              Payment status:{" "}
-              <span className="font-medium capitalize text-green-600">
-                {session.paymentStatus}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-zinc-400" />
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                Payment status:{" "}
+                <span className="font-medium capitalize text-green-600">
+                  {session.paymentStatus}
+                </span>
               </span>
-            </span>
+            </div>
+            {session.transactionId && (
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                Transaction ID:{" "}
+                <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                  {session.transactionId}
+                </span>
+              </div>
+            )}
+            {session.paymentMethod && (
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                Payment Method:{" "}
+                <span className="font-medium capitalize text-zinc-900 dark:text-zinc-100">
+                  {session.paymentMethod}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
