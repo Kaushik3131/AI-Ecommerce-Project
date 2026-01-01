@@ -200,9 +200,7 @@ export async function createCheckoutSession(
       .redirectUrl(`${baseUrl}/checkout/success?orderId=${merchantOrderId}`)
       .metaInfo(metaInfo) // Send metadata to PhonePe
       .expireAfter(3600) // 1 hour expiry
-      .message(
-        `Payment by ${userName} for Order ${merchantOrderId.slice(0, 8)}`,
-      )
+      .message(`Order: ${merchantOrderId} | Customer: ${userName} (${userId})`)
       .build();
 
     // 9. Initiate payment with PhonePe
@@ -272,16 +270,20 @@ export async function getCheckoutSession(merchantOrderId: string) {
       return { success: false, error: "Not authenticated" };
     }
 
-    // Get order from Sanity
+    // Get order from Sanity with all payment details
     const order = await client.fetch(
       `*[_type == "order" && orderNumber == $merchantOrderId && clerkUserId == $userId][0]{
         _id,
         orderNumber,
+        email,
         total,
         status,
         paymentStatus,
         currency,
         amountPaid,
+        phonePeTransactionId,
+        phonePeOrderId,
+        paymentMethod,
         address,
         items[]{
           _key,
@@ -311,14 +313,18 @@ export async function getCheckoutSession(merchantOrderId: string) {
         customerEmail: order.email,
         customerName: order.address?.name,
         amountTotal: order.amountPaid || Math.round(order.total * 100), // In paise
-        paymentStatus: order.paymentStatus || order.status, // COMPLETED/paid/pending
+        paymentStatus: order.paymentStatus || order.status,
         currency: order.currency || "INR",
         shippingAddress: order.address,
+        // Transform items to lineItems format for UI
         lineItems: order.items?.map((item: any) => ({
           name: item.product?.name || "Product",
           quantity: item.quantity,
           amount: Math.round((item.priceAtPurchase || 0) * 100), // In paise
         })),
+        // Payment details
+        transactionId: order.phonePeTransactionId,
+        paymentMethod: order.paymentMethod,
         createdAt: order.createdAt,
       },
     };
