@@ -11,14 +11,12 @@ export const metadata = {
 interface SuccessPageProps {
   searchParams: Promise<{
     orderId?: string; // PhonePe merchant order ID
-    session_id?: string; // Stripe session ID (legacy - commented out)
   }>;
 }
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
   const params = await searchParams;
 
-  // PhonePe uses orderId, Stripe used session_id
   const orderId = params.orderId;
 
   if (!orderId) {

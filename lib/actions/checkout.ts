@@ -1,26 +1,15 @@
 "use server";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
-// STRIPE CODE - Commented out for PhonePe migration
-// import Stripe from "stripe";
 import { client } from "@/sanity/lib/client";
 import { writeClient } from "@/sanity/lib/client";
 import { PRODUCTS_BY_IDS_QUERY } from "@/sanity/queries/products";
-// import { getOrCreateStripeCustomer } from "@/lib/actions/customer";
 
 // PhonePe imports
 import { getPhonePeClient } from "@/lib/phonepe/client";
 import { StandardCheckoutPayRequest, MetaInfo } from "pg-sdk-node";
 import { randomUUID } from "crypto";
 import { getOrCreateCustomer } from "@/lib/actions/phonepe-customer";
-
-// STRIPE CODE - Commented out
-// if (!process.env.STRIPE_SECRET_KEY) {
-//   throw new Error("STRIPE_SECRET_KEY is not defined");
-// }
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-//   apiVersion: "2025-12-15.clover",
-// });
 
 // Types
 interface CartItem {
@@ -49,7 +38,6 @@ interface CheckoutResult {
 /**
  * Creates a PhonePe Payment Session from cart items
  * Validates stock and prices against Sanity before creating session
- * (Previously: Stripe Checkout - code commented below)
  */
 export async function createCheckoutSession(
   items: CartItem[],
@@ -234,47 +222,6 @@ export async function createCheckoutSession(
     });
 
     return { success: true, url: response.redirectUrl ?? undefined };
-
-    // ============================================
-    // STRIPE CODE - Commented out for reference
-    // ============================================
-    // const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-    //   validatedItems.map(({ product, quantity }) => ({
-    //     price_data: {
-    //       currency: "gbp",
-    //       product_data: {
-    //         name: product.name ?? "Product",
-    //         images: product.image?.asset?.url ? [product.image.asset.url] : [],
-    //         metadata: { productId: product._id },
-    //       },
-    //       unit_amount: Math.round((product.price ?? 0) * 100),
-    //     },
-    //     quantity,
-    //   }));
-    //
-    // const { stripeCustomerId, sanityCustomerId } =
-    //   await getOrCreateStripeCustomer(userEmail, userName, userId);
-    //
-    // const metadata = {
-    //   clerkUserId: userId,
-    //   userEmail,
-    //   sanityCustomerId,
-    //   productIds: validatedItems.map((i) => i.product._id).join(","),
-    //   quantities: validatedItems.map((i) => i.quantity).join(","),
-    // };
-    //
-    // const session = await stripe.checkout.sessions.create({
-    //   mode: "payment",
-    //   payment_method_types: ["card"],
-    //   line_items: lineItems,
-    //   customer: stripeCustomerId,
-    //   shipping_address_collection: { allowed_countries: ["GB", "US", ...] },
-    //   metadata,
-    //   success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    //   cancel_url: `${baseUrl}/checkout`,
-    // });
-    //
-    // return { success: true, url: session.url ?? undefined };
   } catch (error) {
     console.error("Checkout error:", error);
     return {
@@ -359,40 +306,3 @@ export async function getCheckoutSession(merchantOrderId: string) {
     return { success: false, error: "Could not retrieve order details" };
   }
 }
-
-// ============================================
-// STRIPE CODE - Commented out for reference
-// ============================================
-// export async function getCheckoutSession(sessionId: string) {
-//   try {
-//     const { userId } = await auth();
-//     if (!userId) {
-//       return { success: false, error: "Not authenticated" };
-//     }
-//     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-//       expand: ["line_items", "customer_details"],
-//     });
-//     if (session.metadata?.clerkUserId !== userId) {
-//       return { success: false, error: "Session not found" };
-//     }
-//     return {
-//       success: true,
-//       session: {
-//         id: session.id,
-//         customerEmail: session.customer_details?.email,
-//         customerName: session.customer_details?.name,
-//         amountTotal: session.amount_total,
-//         paymentStatus: session.payment_status,
-//         shippingAddress: session.customer_details?.address,
-//         lineItems: session.line_items?.data.map((item) => ({
-//           name: item.description,
-//           quantity: item.quantity,
-//           amount: item.amount_total,
-//         })),
-//       },
-//     };
-//   } catch (error) {
-//     console.error("Get session error:", error);
-//     return { success: false, error: "Could not retrieve order details" };
-//   }
-// }

@@ -13,8 +13,6 @@ steps:
       - --build-arg
       - NEXT_PUBLIC_SANITY_API_VERSION=${_NEXT_PUBLIC_SANITY_API_VERSION}
       - --build-arg
-      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
-      - --build-arg
       - NEXT_PUBLIC_BASE_URL=${_NEXT_PUBLIC_BASE_URL}
       - .
 
