@@ -70,7 +70,7 @@ export const orderType = defineType({
       type: "number",
       group: "details",
       readOnly: true,
-      description: "Total order amount in GBP",
+      description: "Total order amount in INR (PhonePe) / GBP (Stripe)",
     }),
     defineField({
       name: "status",
@@ -115,12 +115,60 @@ export const orderType = defineType({
         defineField({ name: "country", type: "string" }),
       ],
     }),
+    // Payment Gateway Fields - Supporting BOTH Stripe and PhonePe
+    // Stripe (for Cloud Run production - until migration complete)
     defineField({
       name: "stripePaymentId",
       type: "string",
       group: "payment",
       readOnly: true,
       description: "Stripe payment intent ID",
+    }),
+
+    // PhonePe Payment Fields (for local development and future production)
+    defineField({
+      name: "phonePeOrderId",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      description: "PhonePe Order ID",
+    }),
+    defineField({
+      name: "phonePeTransactionId",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      description: "PhonePe Transaction ID",
+    }),
+    defineField({
+      name: "paymentMethod",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      description: "Payment method used (UPI, CARD, NET_BANKING, WALLET)",
+    }),
+    defineField({
+      name: "paymentStatus",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      description: "Payment status from PhonePe (COMPLETED, FAILED, PENDING)",
+    }),
+    defineField({
+      name: "currency",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      initialValue: "INR",
+      description: "Currency code (INR for PhonePe)",
+    }),
+    defineField({
+      name: "amountPaid",
+      type: "number",
+      group: "payment",
+      readOnly: true,
+      description:
+        "Amount paid in paise (for verification against order total)",
     }),
     defineField({
       name: "createdAt",
@@ -140,7 +188,7 @@ export const orderType = defineType({
     prepare({ orderNumber, email, total, status }) {
       return {
         title: `Order ${orderNumber ?? "N/A"}`,
-        subtitle: `${email ?? "No email"} • £${total ?? 0} • ${status ?? "paid"}`,
+        subtitle: `${email ?? "No email"} • ₹${total ?? 0} • ${status ?? "paid"}`,
       };
     },
   },

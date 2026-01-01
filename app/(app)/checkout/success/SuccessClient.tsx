@@ -33,7 +33,7 @@ interface SuccessClientProps {
 export function SuccessClient({ session }: SuccessClientProps) {
   const { clearCart } = useCartActions();
 
-  // Clear cart on mount
+  // Clear cart on mount (keep address for future checkouts)
   useEffect(() => {
     clearCart();
   }, [clearCart]);

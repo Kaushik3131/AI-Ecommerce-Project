@@ -58,6 +58,7 @@
     "next": "16.1.1",
     "next-sanity": "11",
     "next-themes": "^0.4.6",
+    "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node-2.0.3.tgz",
     "react": "19.2.3",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",

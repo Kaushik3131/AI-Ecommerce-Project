@@ -1,8 +1,16 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ShoppingBag, AlertTriangle, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingBag,
+  AlertTriangle,
+  Loader2,
+  MapPin,
+  Edit,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckoutButton } from "@/components/app/CheckoutButton";
 import { formatPrice } from "@/lib/utils";
@@ -13,11 +21,29 @@ import {
 } from "@/lib/store/cart-store-provider";
 import { useCartStock } from "@/lib/hooks/useCartStock";
 
+interface SavedAddress {
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+}
+
 export function CheckoutClient() {
   const items = useCartItems();
   const totalPrice = useTotalPrice();
   const totalItems = useTotalItems();
   const { stockMap, isLoading, hasStockIssues } = useCartStock(items);
+  const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
+
+  // Load saved address from sessionStorage
+  useEffect(() => {
+    const addressData = sessionStorage.getItem("checkoutAddress");
+    if (addressData) {
+      setSavedAddress(JSON.parse(addressData));
+    }
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -78,127 +104,154 @@ export function CheckoutClient() {
             {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                <span className="ml-2 text-sm text-zinc-500">
+                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
                   Verifying stock...
                 </span>
               </div>
             )}
 
-            {/* Items List */}
-            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {items.map((item) => {
-                const stockInfo = stockMap.get(item.productId);
-                const hasIssue =
-                  stockInfo?.isOutOfStock || stockInfo?.exceedsStock;
+            {/* Cart Items List */}
+            {!isLoading && (
+              <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {items.map((item) => {
+                  const stockInfo = stockMap.get(item.productId);
+                  const hasIssue =
+                    stockInfo?.isOutOfStock || stockInfo?.exceedsStock;
 
-                return (
-                  <div
-                    key={item.productId}
-                    className={`flex gap-4 px-6 py-4 ${
-                      hasIssue ? "bg-red-50 dark:bg-red-950/20" : ""
-                    }`}
-                  >
-                    {/* Image */}
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
-                      {item.image ? (
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="80px"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-                          No image
+                  return (
+                    <div
+                      key={item.productId}
+                      className={`p-6 ${
+                        hasIssue ? "bg-red-50 dark:bg-red-950/20" : ""
+                      }`}
+                    >
+                      <div className="flex gap-4">
+                        {item.image && (
+                          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-1 flex-col">
+                          <div className="flex justify-between">
+                            <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
+                              {item.name}
+                            </h3>
+                            <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                              {formatPrice(item.price * item.quantity)}
+                            </p>
+                          </div>
+                          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            Qty: {item.quantity} × {formatPrice(item.price)}
+                          </p>
+                          {stockInfo?.isOutOfStock && (
+                            <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
+                              Out of stock
+                            </p>
+                          )}
+                          {stockInfo?.exceedsStock &&
+                            !stockInfo.isOutOfStock && (
+                              <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+                                Only {stockInfo.currentStock} available
+                              </p>
+                            )}
                         </div>
-                      )}
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex flex-1 flex-col justify-between">
-                      <div>
-                        <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
-                          {item.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                          Qty: {item.quantity}
-                        </p>
-                        {stockInfo?.isOutOfStock && (
-                          <p className="mt-1 text-sm font-medium text-red-600">
-                            Out of stock
-                          </p>
-                        )}
-                        {stockInfo?.exceedsStock && !stockInfo.isOutOfStock && (
-                          <p className="mt-1 text-sm font-medium text-amber-600">
-                            Only {stockInfo.currentStock} available
-                          </p>
-                        )}
                       </div>
                     </div>
-
-                    {/* Price */}
-                    <div className="text-right">
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
-                      {item.quantity > 1 && (
-                        <p className="text-sm text-zinc-500">
-                          {formatPrice(item.price)} each
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Order Total & Checkout */}
         <div className="lg:col-span-2">
-          <div className="sticky top-24 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-              Payment Summary
-            </h2>
+          <div className="space-y-6">
+            {/* Shipping Address */}
+            {savedAddress && (
+              <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-zinc-400" />
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      Shipping Address
+                    </h3>
+                  </div>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1"
+                  >
+                    <Link href="/checkout/address">
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </Link>
+                  </Button>
+                </div>
+                <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {savedAddress.name}
+                  </p>
+                  <p className="mt-1">{savedAddress.line1}</p>
+                  {savedAddress.line2 && <p>{savedAddress.line2}</p>}
+                  <p>
+                    {savedAddress.city}, {savedAddress.postcode}
+                  </p>
+                  <p>{savedAddress.country}</p>
+                </div>
+              </div>
+            )}
 
-            <div className="mt-6 space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Subtotal
-                </span>
-                <span className="text-zinc-900 dark:text-zinc-100">
-                  {formatPrice(totalPrice)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Shipping
-                </span>
-                <span className="text-zinc-900 dark:text-zinc-100">
-                  Calculated at checkout
-                </span>
-              </div>
-              <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                <div className="flex justify-between text-base font-semibold">
-                  <span className="text-zinc-900 dark:text-zinc-100">
-                    Total
+            {/* Payment Summary */}
+            <div className="sticky top-24 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+              <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                Payment Summary
+              </h2>
+
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    Subtotal
                   </span>
                   <span className="text-zinc-900 dark:text-zinc-100">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    Shipping
+                  </span>
+                  <span className="text-zinc-900 dark:text-zinc-100">
+                    Calculated at checkout
+                  </span>
+                </div>
+                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <div className="flex justify-between text-base font-semibold">
+                    <span className="text-zinc-900 dark:text-zinc-100">
+                      Total
+                    </span>
+                    <span className="text-zinc-900 dark:text-zinc-100">
+                      {formatPrice(totalPrice)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-6">
-              <CheckoutButton disabled={hasStockIssues || isLoading} />
-            </div>
+              <div className="mt-6">
+                <CheckoutButton disabled={hasStockIssues || isLoading} />
+              </div>
 
-            <p className="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
-              You&apos;ll be redirected to Stripe&apos;s secure checkout
-            </p>
+              <p className="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                You'll be redirected to PhonePe's secure checkout
+              </p>
+            </div>
           </div>
         </div>
       </div>

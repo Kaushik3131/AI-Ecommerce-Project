@@ -1,18 +1,26 @@
 "use server";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
-import Stripe from "stripe";
+// STRIPE CODE - Commented out for PhonePe migration
+// import Stripe from "stripe";
 import { client } from "@/sanity/lib/client";
+import { writeClient } from "@/sanity/lib/client";
 import { PRODUCTS_BY_IDS_QUERY } from "@/sanity/queries/products";
-import { getOrCreateStripeCustomer } from "@/lib/actions/customer";
+// import { getOrCreateStripeCustomer } from "@/lib/actions/customer";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not defined");
-}
+// PhonePe imports
+import { getPhonePeClient } from "@/lib/phonepe/client";
+import { StandardCheckoutPayRequest, MetaInfo } from "pg-sdk-node";
+import { randomUUID } from "crypto";
+import { getOrCreateCustomer } from "@/lib/actions/phonepe-customer";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-12-15.clover",
-});
+// STRIPE CODE - Commented out
+// if (!process.env.STRIPE_SECRET_KEY) {
+//   throw new Error("STRIPE_SECRET_KEY is not defined");
+// }
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+//   apiVersion: "2025-12-15.clover",
+// });
 
 // Types
 interface CartItem {
@@ -23,6 +31,15 @@ interface CartItem {
   image?: string;
 }
 
+interface AddressData {
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+}
+
 interface CheckoutResult {
   success: boolean;
   url?: string;
@@ -30,11 +47,13 @@ interface CheckoutResult {
 }
 
 /**
- * Creates a Stripe Checkout Session from cart items
+ * Creates a PhonePe Payment Session from cart items
  * Validates stock and prices against Sanity before creating session
+ * (Previously: Stripe Checkout - code commented below)
  */
 export async function createCheckoutSession(
   items: CartItem[],
+  address?: AddressData,
 ): Promise<CheckoutResult> {
   try {
     // 1. Verify user is authenticated
@@ -51,9 +70,9 @@ export async function createCheckoutSession(
     }
 
     // 3. Fetch current product data from Sanity to validate prices/stock
-    const productIds = items.map((item) => item.productId);
+    const cartProductIds = items.map((item) => item.productId);
     const products = await client.fetch(PRODUCTS_BY_IDS_QUERY, {
-      ids: productIds,
+      ids: cartProductIds,
     });
 
     // 4. Validate each item
@@ -92,113 +111,144 @@ export async function createCheckoutSession(
       return { success: false, error: validationErrors.join(". ") };
     }
 
-    // 5. Create Stripe line items with validated prices
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-      validatedItems.map(({ product, quantity }) => ({
-        price_data: {
-          currency: "gbp",
-          product_data: {
-            name: product.name ?? "Product",
-            images: product.image?.asset?.url ? [product.image.asset.url] : [],
-            metadata: {
-              productId: product._id,
-            },
-          },
-          unit_amount: Math.round((product.price ?? 0) * 100), // Convert to pence
-        },
-        quantity,
-      }));
+    // 5. Calculate total amount for PhonePe (in paise - INR only)
+    const totalAmount = validatedItems.reduce(
+      (sum, { product, quantity }) => sum + (product.price ?? 0) * quantity,
+      0,
+    );
+    const amountInPaise = Math.round(totalAmount * 100); // Convert to paise
 
-    // 6. Get or create Stripe customer
+    // 6. Get user details
     const userEmail = user.emailAddresses[0]?.emailAddress ?? "";
     const userName =
       `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || userEmail;
 
-    const { stripeCustomerId, sanityCustomerId } =
-      await getOrCreateStripeCustomer(userEmail, userName, userId);
+    // 7. User details already extracted above
 
-    // 7. Prepare metadata for webhook
-    const metadata = {
+    // 8. Create PhonePe Payment Request
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "NEXT_PUBLIC_BASE_URL is not defined. Please set it in .env.local",
+      );
+    }
+
+    const merchantOrderId = randomUUID();
+
+    // Get or create customer in Sanity
+    const customerId = await getOrCreateCustomer(userEmail, userName, userId);
+
+    // Store order metadata in Sanity BEFORE payment
+    // This allows webhook to retrieve it later using merchantOrderId
+    const order = await writeClient.create({
+      _type: "order",
+      orderNumber: merchantOrderId,
       clerkUserId: userId,
-      userEmail,
-      sanityCustomerId,
-      productIds: validatedItems.map((i) => i.product._id).join(","),
-      quantities: validatedItems.map((i) => i.quantity).join(","),
-    };
-
-    // 8. Create Stripe Checkout Session
-    // Priority: NEXT_PUBLIC_BASE_URL > Vercel URL > localhost
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-      "http://localhost:3000";
-
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      customer: stripeCustomerId,
-      shipping_address_collection: {
-        allowed_countries: [
-          "GB", // United Kingdom
-          "US", // United States
-          "CA", // Canada
-          "AU", // Australia
-          "NZ", // New Zealand
-          "IE", // Ireland
-          "DE", // Germany
-          "FR", // France
-          "ES", // Spain
-          "IT", // Italy
-          "NL", // Netherlands
-          "BE", // Belgium
-          "AT", // Austria
-          "CH", // Switzerland
-          "SE", // Sweden
-          "NO", // Norway
-          "DK", // Denmark
-          "FI", // Finland
-          "PT", // Portugal
-          "PL", // Poland
-          "CZ", // Czech Republic
-          "GR", // Greece
-          "HU", // Hungary
-          "RO", // Romania
-          "BG", // Bulgaria
-          "HR", // Croatia
-          "SI", // Slovenia
-          "SK", // Slovakia
-          "LT", // Lithuania
-          "LV", // Latvia
-          "EE", // Estonia
-          "LU", // Luxembourg
-          "MT", // Malta
-          "CY", // Cyprus
-          "JP", // Japan
-          "SG", // Singapore
-          "HK", // Hong Kong
-          "KR", // South Korea
-          "TW", // Taiwan
-          "MY", // Malaysia
-          "TH", // Thailand
-          "IN", // India
-          "AE", // United Arab Emirates
-          "SA", // Saudi Arabia
-          "IL", // Israel
-          "ZA", // South Africa
-          "BR", // Brazil
-          "MX", // Mexico
-          "AR", // Argentina
-          "CL", // Chile
-          "CO", // Colombia
-        ],
+      email: userEmail,
+      customer: {
+        _type: "reference",
+        _ref: customerId,
       },
-      metadata,
-      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/checkout`,
+      ...(address && {
+        address: {
+          name: address.name,
+          line1: address.line1,
+          line2: address.line2 || "",
+          city: address.city,
+          postcode: address.postcode,
+          country: address.country,
+        },
+      }),
+      items: validatedItems.map(({ product, quantity }, index) => ({
+        _key: `${product._id}-${Date.now()}-${index}`,
+        product: {
+          _type: "reference",
+          _ref: product._id,
+        },
+        quantity: quantity,
+        priceAtPurchase: product.price ?? 0,
+      })),
+      total: totalAmount,
+      status: "pending", // Will be updated to "paid" by webhook
+      paymentStatus: "PENDING",
+      createdAt: new Date().toISOString(), // Add creation timestamp
     });
 
-    return { success: true, url: session.url ?? undefined };
+    console.log("Pre-order created in Sanity:", merchantOrderId);
+
+    // Prepare MetaInfo for PhonePe (for tracking & verification)
+    // Using first 4 UDF fields for essential data
+    const metaInfo = new MetaInfo(
+      merchantOrderId, // udf1: Sanity order ID
+      userId, // udf2: Clerk user ID
+      userEmail, // udf3: Customer email
+      amountInPaise.toString(), // udf4: Amount in paise (for verification)
+      "", // udf5: Reserved for future use
+    );
+
+    console.log("MetaInfo prepared:", {
+      udf1: merchantOrderId,
+      udf2: userId,
+      udf3: userEmail,
+      udf4: amountInPaise.toString(),
+    });
+
+    const paymentRequest = StandardCheckoutPayRequest.builder()
+      .merchantOrderId(merchantOrderId)
+      .amount(amountInPaise)
+      .redirectUrl(`${baseUrl}/checkout/success?orderId=${merchantOrderId}`)
+      .metaInfo(metaInfo) // Send metadata to PhonePe
+      .expireAfter(3600) // 1 hour expiry
+      .message(`Payment for order ${merchantOrderId}`)
+      .build();
+
+    // 9. Initiate payment with PhonePe
+    const phonePeClient = getPhonePeClient();
+    const response = await phonePeClient.pay(paymentRequest);
+
+    return { success: true, url: response.redirectUrl ?? undefined };
+
+    // ============================================
+    // STRIPE CODE - Commented out for reference
+    // ============================================
+    // const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
+    //   validatedItems.map(({ product, quantity }) => ({
+    //     price_data: {
+    //       currency: "gbp",
+    //       product_data: {
+    //         name: product.name ?? "Product",
+    //         images: product.image?.asset?.url ? [product.image.asset.url] : [],
+    //         metadata: { productId: product._id },
+    //       },
+    //       unit_amount: Math.round((product.price ?? 0) * 100),
+    //     },
+    //     quantity,
+    //   }));
+    //
+    // const { stripeCustomerId, sanityCustomerId } =
+    //   await getOrCreateStripeCustomer(userEmail, userName, userId);
+    //
+    // const metadata = {
+    //   clerkUserId: userId,
+    //   userEmail,
+    //   sanityCustomerId,
+    //   productIds: validatedItems.map((i) => i.product._id).join(","),
+    //   quantities: validatedItems.map((i) => i.quantity).join(","),
+    // };
+    //
+    // const session = await stripe.checkout.sessions.create({
+    //   mode: "payment",
+    //   payment_method_types: ["card"],
+    //   line_items: lineItems,
+    //   customer: stripeCustomerId,
+    //   shipping_address_collection: { allowed_countries: ["GB", "US", ...] },
+    //   metadata,
+    //   success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    //   cancel_url: `${baseUrl}/checkout`,
+    // });
+    //
+    // return { success: true, url: session.url ?? undefined };
   } catch (error) {
     console.error("Checkout error:", error);
     return {
@@ -209,9 +259,10 @@ export async function createCheckoutSession(
 }
 
 /**
- * Retrieves a checkout session by ID (for success page)
+ * Retrieves order details by merchant order ID (for success page)
+ * Fetches from Sanity to show order details even before webhook completes
  */
-export async function getCheckoutSession(sessionId: string) {
+export async function getCheckoutSession(merchantOrderId: string) {
   try {
     const { userId } = await auth();
 
@@ -219,33 +270,89 @@ export async function getCheckoutSession(sessionId: string) {
       return { success: false, error: "Not authenticated" };
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["line_items", "customer_details"],
-    });
+    // Get order from Sanity
+    const order = await client.fetch(
+      `*[_type == "order" && orderNumber == $merchantOrderId && clerkUserId == $userId][0]{
+        _id,
+        orderNumber,
+        total,
+        status,
+        paymentStatus,
+        currency,
+        amountPaid,
+        address,
+        items[]{
+          _key,
+          quantity,
+          priceAtPurchase,
+          product->{
+            _id,
+            name,
+            price,
+            "image": image.asset->url
+          }
+        },
+        createdAt
+      }`,
+      { merchantOrderId, userId },
+    );
 
-    // Verify the session belongs to this user
-    if (session.metadata?.clerkUserId !== userId) {
-      return { success: false, error: "Session not found" };
+    if (!order) {
+      return { success: false, error: "Order not found" };
     }
 
     return {
       success: true,
       session: {
-        id: session.id,
-        customerEmail: session.customer_details?.email,
-        customerName: session.customer_details?.name,
-        amountTotal: session.amount_total,
-        paymentStatus: session.payment_status,
-        shippingAddress: session.customer_details?.address,
-        lineItems: session.line_items?.data.map((item) => ({
-          name: item.description,
-          quantity: item.quantity,
-          amount: item.amount_total,
-        })),
+        id: order.orderNumber,
+        merchantOrderId: order.orderNumber,
+        amountTotal: order.amountPaid || Math.round(order.total * 100), // In paise
+        paymentStatus: order.paymentStatus || order.status, // COMPLETED/paid/pending
+        currency: order.currency || "INR",
+        shippingAddress: order.address,
+        items: order.items,
+        createdAt: order.createdAt,
       },
     };
   } catch (error) {
-    console.error("Get session error:", error);
+    console.error("Get order error:", error);
     return { success: false, error: "Could not retrieve order details" };
   }
 }
+
+// ============================================
+// STRIPE CODE - Commented out for reference
+// ============================================
+// export async function getCheckoutSession(sessionId: string) {
+//   try {
+//     const { userId } = await auth();
+//     if (!userId) {
+//       return { success: false, error: "Not authenticated" };
+//     }
+//     const session = await stripe.checkout.sessions.retrieve(sessionId, {
+//       expand: ["line_items", "customer_details"],
+//     });
+//     if (session.metadata?.clerkUserId !== userId) {
+//       return { success: false, error: "Session not found" };
+//     }
+//     return {
+//       success: true,
+//       session: {
+//         id: session.id,
+//         customerEmail: session.customer_details?.email,
+//         customerName: session.customer_details?.name,
+//         amountTotal: session.amount_total,
+//         paymentStatus: session.payment_status,
+//         shippingAddress: session.customer_details?.address,
+//         lineItems: session.line_items?.data.map((item) => ({
+//           name: item.description,
+//           quantity: item.quantity,
+//           amount: item.amount_total,
+//         })),
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Get session error:", error);
+//     return { success: false, error: "Could not retrieve order details" };
+//   }
+// }

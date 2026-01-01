@@ -50,6 +50,12 @@ export type Order = {
     country?: string;
   };
   stripePaymentId?: string;
+  phonePeOrderId?: string;
+  phonePeTransactionId?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  currency?: string;
+  amountPaid?: number;
   createdAt?: string;
 };
 
@@ -245,7 +251,7 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes = Order | Product | SanityImageCrop | SanityImageHotspot | Slug | Customer | Category | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
-// Source: ./sanity/lib/queries/categories.ts
+// Source: ./sanity/queries/categories.ts
 // Variable: ALL_CATEGORIES_QUERY
 // Query: *[  _type == "category"] | order(title asc) {  _id,  title,  "slug": slug.current,  "image": image{    asset->{      _id,      url    },    hotspot  }}
 export type ALL_CATEGORIES_QUERYResult = Array<{
@@ -275,7 +281,7 @@ export type CATEGORY_BY_SLUG_QUERYResult = {
   } | null;
 } | null;
 
-// Source: ./sanity/lib/queries/customers.ts
+// Source: ./sanity/queries/customers.ts
 // Variable: CUSTOMER_BY_EMAIL_QUERY
 // Query: *[  _type == "customer"  && email == $email][0]{  _id,  email,  name,  clerkUserId,  stripeCustomerId,  createdAt}
 export type CUSTOMER_BY_EMAIL_QUERYResult = {
@@ -297,7 +303,7 @@ export type CUSTOMER_BY_STRIPE_ID_QUERYResult = {
   createdAt: string | null;
 } | null;
 
-// Source: ./sanity/lib/queries/orders.ts
+// Source: ./sanity/queries/orders.ts
 // Variable: ORDERS_BY_USER_QUERY
 // Query: *[  _type == "order"  && clerkUserId == $clerkUserId] | order(createdAt desc) {  _id,  orderNumber,  total,  status,  createdAt,  "itemCount": count(items),  "itemNames": items[].product->name,  "itemImages": items[].product->images[0].asset->url}
 export type ORDERS_BY_USER_QUERYResult = Array<{
@@ -362,7 +368,7 @@ export type ORDER_BY_STRIPE_PAYMENT_ID_QUERYResult = {
   _id: string;
 } | null;
 
-// Source: ./sanity/lib/queries/products.ts
+// Source: ./sanity/queries/products.ts
 // Variable: ALL_PRODUCTS_QUERY
 // Query: *[  _type == "product"] | order(name asc) {  _id,  name,  "slug": slug.current,  description,  price,  "images": images[]{    _key,    asset->{      _id,      url    },    hotspot  },  category->{    _id,    title,    "slug": slug.current  },  material,  color,  dimensions,  stock,  featured,  assemblyRequired}
 export type ALL_PRODUCTS_QUERYResult = Array<{
@@ -651,7 +657,7 @@ export type AI_SEARCH_PRODUCTS_QUERYResult = Array<{
   assemblyRequired: boolean | null;
 }>;
 
-// Source: ./sanity/lib/queries/stats.ts
+// Source: ./sanity/queries/stats.ts
 // Variable: PRODUCT_COUNT_QUERY
 // Query: count(*[_type == "product"])
 export type PRODUCT_COUNT_QUERYResult = number;

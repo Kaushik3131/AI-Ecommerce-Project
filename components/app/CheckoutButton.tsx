@@ -21,11 +21,24 @@ export function CheckoutButton({ disabled }: CheckoutButtonProps) {
   const handleCheckout = () => {
     setError(null);
 
+    // Check if address is already saved
+    const savedAddress = sessionStorage.getItem("checkoutAddress");
+
+    if (!savedAddress) {
+      // Redirect to address page first
+      router.push("/checkout/address");
+      return;
+    }
+
+    // Address exists, proceed with payment
     startTransition(async () => {
-      const result = await createCheckoutSession(items);
+      // Parse address from sessionStorage
+      const address = JSON.parse(savedAddress);
+
+      const result = await createCheckoutSession(items, address);
 
       if (result.success && result.url) {
-        // Redirect to Stripe Checkout
+        // Redirect to PhonePe Checkout
         router.push(result.url);
       } else {
         setError(result.error ?? "Checkout failed");
@@ -52,12 +65,12 @@ export function CheckoutButton({ disabled }: CheckoutButtonProps) {
         ) : (
           <>
             <CreditCard className="mr-2 h-5 w-5" />
-            Pay with Stripe
+            Proceed to Checkout
           </>
         )}
       </Button>
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400 text-center">
+        <p className="text-center text-sm text-red-600 dark:text-red-400">
           {error}
         </p>
       )}
