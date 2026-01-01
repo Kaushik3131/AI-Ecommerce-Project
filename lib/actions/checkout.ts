@@ -141,7 +141,7 @@ export async function createCheckoutSession(
 
     // Store order metadata in Sanity BEFORE payment
     // This allows webhook to retrieve it later using merchantOrderId
-    const order = await writeClient.create({
+    await writeClient.create({
       _type: "order",
       orderNumber: merchantOrderId,
       clerkUserId: userId,
@@ -200,7 +200,9 @@ export async function createCheckoutSession(
       .redirectUrl(`${baseUrl}/checkout/success?orderId=${merchantOrderId}`)
       .metaInfo(metaInfo) // Send metadata to PhonePe
       .expireAfter(3600) // 1 hour expiry
-      .message(`Payment for order ${merchantOrderId}`)
+      .message(
+        `Payment by ${userName} for Order ${merchantOrderId.slice(0, 8)}`,
+      )
       .build();
 
     // 9. Initiate payment with PhonePe
@@ -306,11 +308,17 @@ export async function getCheckoutSession(merchantOrderId: string) {
       session: {
         id: order.orderNumber,
         merchantOrderId: order.orderNumber,
+        customerEmail: order.email,
+        customerName: order.address?.name,
         amountTotal: order.amountPaid || Math.round(order.total * 100), // In paise
         paymentStatus: order.paymentStatus || order.status, // COMPLETED/paid/pending
         currency: order.currency || "INR",
         shippingAddress: order.address,
-        items: order.items,
+        lineItems: order.items?.map((item: any) => ({
+          name: item.product?.name || "Product",
+          quantity: item.quantity,
+          amount: Math.round((item.priceAtPurchase || 0) * 100), // In paise
+        })),
         createdAt: order.createdAt,
       },
     };

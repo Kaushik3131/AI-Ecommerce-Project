@@ -20,6 +20,7 @@ interface SuccessClientProps {
       city?: string | null;
       state?: string | null;
       postal_code?: string | null;
+      postcode?: string | null; // Support Sanity field name
       country?: string | null;
     } | null;
     lineItems?: {
@@ -103,7 +104,7 @@ export function SuccessClient({ session }: SuccessClientProps) {
               {address.line1 && <p>{address.line1}</p>}
               {address.line2 && <p>{address.line2}</p>}
               <p>
-                {[address.city, address.state, address.postal_code]
+                {[address.city, address.state, address.postal_code || address.postcode]
                   .filter(Boolean)
                   .join(", ")}
               </p>
