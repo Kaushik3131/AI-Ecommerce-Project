@@ -182,17 +182,36 @@ async function handleOrderFailed(payload: PhonePeWebhookPayload) {
 
     console.log("Processing failed order:", merchantOrderId);
 
-    // Optionally create a failed order record for tracking
-    await writeClient.create({
-      _type: "order",
-      orderNumber: merchantOrderId,
-      phonePeOrderId: orderId,
-      status: "failed",
-      paymentStatus: state,
-      paymentMethod: paymentDetails?.[0]?.errorCode || "unknown",
-    });
+    // Find the pre-created order by merchantOrderId
+    const existingOrder = await writeClient.fetch(
+      `*[_type == "order" && orderNumber == $merchantOrderId][0]`,
+      { merchantOrderId },
+    );
 
-    console.log("Failed order logged:", orderId);
+    if (!existingOrder) {
+      console.error("Order not found for failed payment:", merchantOrderId);
+      return;
+    }
+
+    // Update the order to cancelled status
+    await writeClient
+      .patch(existingOrder._id)
+      .set({
+        phonePeOrderId: orderId,
+        phonePeTransactionId: paymentDetails?.[0]?.transactionId || orderId,
+        status: "cancelled",
+        paymentStatus: "FAILED",
+        paymentMethod: paymentDetails?.[0]?.paymentMode || "unknown",
+        failureReason: paymentDetails?.[0]?.errorCode || state,
+        updatedAt: new Date().toISOString(),
+      })
+      .commit();
+
+    console.log("Order marked as cancelled:", {
+      orderId,
+      merchantOrderId,
+      status: "cancelled",
+    });
   } catch (error) {
     console.error("Error handling failed order:", error);
     // Don't throw - we don't want to retry failed orders

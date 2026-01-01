@@ -72,7 +72,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
               </h2>
             </div>
             <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {order.items?.map((item) => (
+              {order.items?.map((item: any) => (
                 <div key={item._key} className="flex gap-4 px-6 py-4">
                   {/* Image */}
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
@@ -197,6 +197,26 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                   <p className="text-xs font-light tracking-wide">Email</p>
                   <p className="min-w-0 truncate text-sm text-zinc-900 dark:text-zinc-100">
                     {order.email}
+                  </p>
+                </div>
+              )}
+              {order.phonePeTransactionId && (
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-light tracking-wide">
+                    Transaction ID
+                  </p>
+                  <p className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                    {order.phonePeTransactionId}
+                  </p>
+                </div>
+              )}
+              {order.paymentMethod && (
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-light tracking-wide">
+                    Payment Method
+                  </p>
+                  <p className="text-sm font-medium capitalize text-zinc-900 dark:text-zinc-100">
+                    {order.paymentMethod.replace(/_/g, " ")}
                   </p>
                 </div>
               )}

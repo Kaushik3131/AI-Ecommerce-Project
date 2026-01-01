@@ -27,6 +27,9 @@ interface OrderDetailProjection {
   status: string;
   createdAt: string;
   stripePaymentId: string | null;
+  phonePeTransactionId: string | null;
+  phonePeOrderId: string | null;
+  paymentMethod: string | null;
   address: {
     name: string;
     line1: string;
@@ -62,6 +65,9 @@ function OrderDetailContent({ handle }: { handle: DocumentHandle }) {
       status,
       createdAt,
       stripePaymentId,
+      phonePeTransactionId,
+      phonePeOrderId,
+      paymentMethod,
       address{
         name,
         line1,
@@ -241,9 +247,14 @@ function OrderDetailContent({ handle }: { handle: DocumentHandle }) {
               <p className="break-all text-zinc-900 dark:text-zinc-100">
                 {data.email}
               </p>
-              {data.stripePaymentId && (
-                <p className="break-all text-xs text-zinc-500 dark:text-zinc-400">
-                  Payment: {data.stripePaymentId}
+              {data.phonePeTransactionId && (
+                <p className="break-all font-mono text-xs text-zinc-500 dark:text-zinc-400">
+                  Txn: {data.phonePeTransactionId}
+                </p>
+              )}
+              {data.paymentMethod && (
+                <p className="text-xs capitalize text-zinc-500 dark:text-zinc-400">
+                  Method: {data.paymentMethod.replace(/_/g, " ")}
                 </p>
               )}
             </div>
