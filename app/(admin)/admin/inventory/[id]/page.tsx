@@ -300,7 +300,7 @@ function ProductDetailContent({ handle }: { handle: DocumentHandle }) {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="price">Price (£)</Label>
+                <Label htmlFor="price">Price (₹)</Label>
                 <Suspense fallback={<Skeleton className="h-10" />}>
                   <PriceEditor {...handle} />
                 </Suspense>

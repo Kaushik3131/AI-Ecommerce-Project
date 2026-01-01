@@ -57,7 +57,7 @@ export const orderType = defineType({
             prepare({ title, quantity, price, media }) {
               return {
                 title: title ?? "Product",
-                subtitle: `Qty: ${quantity} • £${price}`,
+                subtitle: `Qty: ${quantity} • ₹${price}`,
                 media,
               };
             },

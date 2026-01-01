@@ -222,7 +222,7 @@ export function AIInsightsCard() {
             Revenue (7d)
           </p>
           <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            £
+            ₹
             {Number(rawMetrics.currentRevenue).toLocaleString("en-GB", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -256,7 +256,7 @@ export function AIInsightsCard() {
             Avg Order
           </p>
           <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            £{rawMetrics.avgOrderValue}
+            ₹{rawMetrics.avgOrderValue}
           </p>
           <p className="text-xs text-zinc-500">Per order</p>
         </div>
@@ -292,9 +292,9 @@ export function AIInsightsCard() {
             {insights.salesTrends.summary}
           </p>
           <ul className="space-y-2">
-            {insights.salesTrends.highlights.map((highlight, i) => (
+            {insights.salesTrends.highlights.map((highlight) => (
               <li
-                key={i}
+                key={highlight}
                 className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
               >
                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
@@ -317,9 +317,9 @@ export function AIInsightsCard() {
           </p>
           {insights.inventory.alerts.length > 0 && (
             <div className="space-y-2">
-              {insights.inventory.alerts.map((alert, i) => (
+              {insights.inventory.alerts.map((alert) => (
                 <div
-                  key={i}
+                  key={alert}
                   className="flex items-start gap-2 rounded-lg bg-amber-50 p-2 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
                 >
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -329,9 +329,9 @@ export function AIInsightsCard() {
             </div>
           )}
           <ul className="space-y-2">
-            {insights.inventory.recommendations.map((rec, i) => (
+            {insights.inventory.recommendations.map((rec) => (
               <li
-                key={i}
+                key={rec}
                 className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
               >
                 <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
@@ -355,9 +355,9 @@ export function AIInsightsCard() {
               <p className="text-xs font-medium uppercase tracking-wide text-red-600 dark:text-red-400">
                 Urgent
               </p>
-              {insights.actionItems.urgent.map((item, i) => (
+              {insights.actionItems.urgent.map((item) => (
                 <div
-                  key={i}
+                  key={item}
                   className="flex items-start gap-2 rounded-lg bg-red-50 p-2 text-sm text-red-800 dark:bg-red-950/30 dark:text-red-200"
                 >
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -373,9 +373,9 @@ export function AIInsightsCard() {
                 Recommended
               </p>
               <ul className="space-y-1">
-                {insights.actionItems.recommended.map((item, i) => (
+                {insights.actionItems.recommended.map((item) => (
                   <li
-                    key={i}
+                    key={item}
                     className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
                   >
                     <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
@@ -392,9 +392,9 @@ export function AIInsightsCard() {
                 Opportunities
               </p>
               <ul className="space-y-1">
-                {insights.actionItems.opportunities.map((item, i) => (
+                {insights.actionItems.opportunities.map((item) => (
                   <li
-                    key={i}
+                    key={item}
                     className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
                   >
                     <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />

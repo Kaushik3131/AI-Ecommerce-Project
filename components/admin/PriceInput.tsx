@@ -17,7 +17,7 @@ function PriceInputContent(handle: PriceInputProps) {
 
   return (
     <div className="flex items-center gap-1">
-      <span className="text-sm text-zinc-500">£</span>
+      <span className="text-sm text-zinc-500">₹</span>
       <Input
         type="number"
         min={0}
