@@ -34,5 +34,17 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
     redirect("/");
   }
 
+  // Check if payment was actually successful
+  const paymentStatus = result.session.paymentStatus?.toUpperCase();
+
+  if (paymentStatus !== "COMPLETED" && paymentStatus !== "PAID") {
+    // Payment failed or is still pending - redirect to checkout with error
+    console.error("Payment not completed:", {
+      orderId,
+      paymentStatus,
+    });
+    redirect(`/checkout?error=payment_failed&orderId=${orderId}`);
+  }
+
   return <SuccessClient session={result.session} />;
 }

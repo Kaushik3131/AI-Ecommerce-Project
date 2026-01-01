@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ShoppingBag,
@@ -10,6 +11,7 @@ import {
   Loader2,
   MapPin,
   Edit,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckoutButton } from "@/components/app/CheckoutButton";
@@ -31,11 +33,17 @@ interface SavedAddress {
 }
 
 export function CheckoutClient() {
+  const searchParams = useSearchParams();
   const items = useCartItems();
   const totalPrice = useTotalPrice();
   const totalItems = useTotalItems();
   const { stockMap, isLoading, hasStockIssues } = useCartStock(items);
   const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
+  const [showError, setShowError] = useState(false);
+
+  // Check for payment error from URL
+  const paymentError = searchParams.get("error");
+  const failedOrderId = searchParams.get("orderId");
 
   // Load saved address from sessionStorage
   useEffect(() => {
@@ -43,7 +51,12 @@ export function CheckoutClient() {
     if (addressData) {
       setSavedAddress(JSON.parse(addressData));
     }
-  }, []);
+
+    // Show error if payment failed
+    if (paymentError === "payment_failed") {
+      setShowError(true);
+    }
+  }, [paymentError]);
 
   if (items.length === 0) {
     return (
@@ -79,6 +92,37 @@ export function CheckoutClient() {
           Checkout
         </h1>
       </div>
+
+      {/* Payment Error Alert */}
+      {showError && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-red-900 dark:text-red-100">
+                Payment Failed
+              </h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                Your payment could not be completed. Please try again or contact
+                support if the issue persists.
+              </p>
+              {failedOrderId && (
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                  Order ID: {failedOrderId}
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowError(false)}
+              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+              aria-label="Dismiss"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-5">
         {/* Cart Items */}
