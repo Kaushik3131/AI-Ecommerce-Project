@@ -9,7 +9,7 @@
 ![Google AI](https://img.shields.io/badge/Google_AI-Gemini-4285F4?style=for-the-badge&logo=google)
 ![Cloud Run](https://img.shields.io/badge/Cloud_Run-Deployed-4285F4?style=for-the-badge&logo=google-cloud)
 
-A modern furniture e-commerce platform with an intelligent AI shopping assistant powered by Google Gemini 2.0
+A modern furniture e-commerce platform with an intelligent AI shopping assistant powered by Google Gemini 3 Flash
 
 **🚀 [Live Demo on Cloud Run](https://ai-ecommerce-app-812536730646.asia-south1.run.app)**
 
@@ -21,12 +21,12 @@ A modern furniture e-commerce platform with an intelligent AI shopping assistant
 
 ## 🎯 Overview
 
-An enterprise-grade e-commerce platform that revolutionizes online shopping with a conversational AI assistant. Built with Next.js 16, React 19, and Google Gemini 2.0, featuring natural language product search, intelligent recommendations, and seamless payment processing through PhonePe.
+An enterprise-grade e-commerce platform that revolutionizes online shopping with a conversational AI assistant. Built with Next.js 16, React 19, and Google Gemini 3 Flash, featuring natural language product search, intelligent recommendations, and seamless payment processing through PhonePe.
 
 ### Key Highlights
 
 - **AI-Powered Shopping** - Natural language search with context-aware recommendations
-- **Payment Gateway Migration** - Successfully migrated from Stripe to PhonePe for Indian market
+- **Payment Gateway Integration** - Implemented PhonePe payment gateway for Indian market
 - **Real-time Updates** - Sanity CMS with live content synchronization
 - **Production Deployment** - Containerized deployment on Google Cloud Run with CI/CD
 - **Admin Intelligence** - AI-generated business insights and analytics
@@ -52,29 +52,36 @@ An AI-powered shopping assistant that understands natural language queries, redu
 
 ## 📸 Screenshots
 
-### AI Shopping Assistant in Action
-*Coming soon - AI chat interface with natural language product search*
+### 🤖 AI Shopping Assistant in Action
+![AI Chat Demo](./docs/ai-chat-demo.gif)
+*Natural language product search with real-time streaming responses and context-aware recommendations*
 
-### Admin Dashboard with AI Insights
-*Coming soon - Real-time analytics and AI-generated business recommendations*
+### 🛒 Complete Checkout Flow
+![Checkout Flow](./docs/checkout-flow.gif)
+*Seamless cart management, address collection, and PhonePe payment integration*
 
-### Responsive Design
-*Coming soon - Mobile-first design with dark mode support*
+### 👨‍💼 Admin Dashboard
+![Admin Dashboard](./docs/admin-dashboard.gif)
+*AI-generated business insights, inventory management, and order fulfillment*
+
+### 📝 Sanity CMS Integration
+![Sanity Dashboard](./docs/sanity-dashboard.gif)
+*Real-time content management with custom schemas and live preview*
 
 ---
 
 ## 🔧 Technical Challenges Solved
 
-### 1. Payment Gateway Migration (Stripe → PhonePe)
-**Challenge**: Migrate from Stripe to PhonePe without breaking existing orders or losing transaction history
+### 1. Payment Gateway Integration
+**Challenge**: Implement secure payment processing with PhonePe for Indian customers supporting UPI, cards, and wallets
 
 **Solution**: 
-- Retained Stripe schema fields in Sanity for historical data preservation
-- Implemented webhook signature verification for PhonePe (Basic Auth)
-- Created dual payment flow support during transition period
-- Zero downtime migration with backward compatibility
+- Integrated PhonePe SDK with proper authentication and API configuration
+- Implemented webhook signature verification for secure payment callbacks
+- Created server-side payment request generation for security
+- Built automated order status updates based on payment events
 
-**Impact**: Successfully migrated to Indian payment gateway while maintaining complete order history
+**Impact**: Seamless payment experience for Indian customers with multiple payment options
 
 ---
 
@@ -195,7 +202,7 @@ An AI-powered shopping assistant that understands natural language queries, redu
 
 ### AI & Intelligence
 - **[Vercel AI SDK](https://sdk.vercel.ai/)** - AI framework for streaming responses
-- **[Google Gemini 2.0 Flash](https://ai.google.dev/)** - Large language model
+- **[Google Gemini 3 Flash](https://ai.google.dev/)** - Large language model
 - **Agentic AI Pattern** - Tool-calling architecture with function calling
 - **Custom Tools**: `searchProducts`, `getMyOrders`
 
@@ -249,7 +256,7 @@ An AI-powered shopping assistant that understands natural language queries, redu
 
 ```typescript
 ┌────────────────────────────────────────────────────┐
-│      AI Shopping Agent (Gemini 2.0 Flash)          │
+│      AI Shopping Agent (Gemini 3 Flash)            │
 ├────────────────────────────────────────────────────┤
 │  Context-Aware Tool Selection:                     │
 │                                                     │
@@ -458,13 +465,13 @@ The agent follows detailed instructions for:
 
 ### Technical Implementation
 
-✅ **Payment Gateway Migration**
-- Successfully migrated from Stripe to PhonePe
-- Implemented webhook verification and transaction tracking
+✅ **Payment Gateway Integration**
+- Implemented PhonePe payment gateway with UPI, cards, and wallets
+- Built webhook verification and transaction tracking system
 - Automated order status updates based on payment events
 
 ✅ **AI Integration**
-- Built conversational shopping assistant with Google Gemini 2.0
+- Built conversational shopping assistant with Google Gemini 3 Flash
 - Implemented tool-calling architecture for dynamic function execution
 - Created AI-generated admin insights for business intelligence
 
@@ -479,9 +486,9 @@ The agent follows detailed instructions for:
 - Implemented CI/CD pipeline with GitHub Actions
 
 ✅ **Code Quality**
-- Removed deprecated dependencies (Stripe)
 - Maintained TypeScript type safety throughout
 - Implemented comprehensive error handling
+- Clean, modular architecture with separation of concerns
 
 ### Performance Metrics
 
@@ -543,7 +550,7 @@ This project is **private and proprietary**. All rights reserved.
 
 <div align="center">
 
-**Built with ❤️ using Next.js 16, React 19, and Google Gemini 2.0 AI**
+**Built with ❤️ using Next.js 16, React 19, and Google Gemini 3 Flash AI**
 
 ⭐ Star this repo if you find it helpful!
 
