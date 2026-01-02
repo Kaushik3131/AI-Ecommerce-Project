@@ -40,8 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-
 /STRIPE_TO_PHONEPE_MIGRATION.md
 /sample-data.ndjson
 /list-models.mjs
