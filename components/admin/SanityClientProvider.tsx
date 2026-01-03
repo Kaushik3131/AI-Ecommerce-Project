@@ -18,6 +18,12 @@ export function SanityClientProvider({
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
   const token = process.env.NEXT_PUBLIC_SANITY_API_TOKEN;
 
+  console.log("[SanityClientProvider] Config:", {
+    projectId: projectId ? "✓" : "✗",
+    dataset: dataset ? "✓" : "✗",
+    token: token ? `✓ (${token.substring(0, 10)}...)` : "✗",
+  });
+
   if (!projectId || !dataset) {
     console.error("Missing Sanity configuration:", {
       projectId: projectId ? "✓" : "✗",
