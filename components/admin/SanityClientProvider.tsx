@@ -16,17 +16,19 @@ export function SanityClientProvider({
   // Validate environment variables
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+  const token = process.env.NEXT_PUBLIC_SANITY_API_TOKEN;
 
   console.log("[SanityClientProvider] Config:", {
     projectId: projectId ? "✓" : "✗",
     dataset: dataset ? "✓" : "✗",
-    mode: "OAuth (Sanity Login)",
+    token: token ? `✓ (${token.substring(0, 10)}...)` : "✗",
   });
 
   if (!projectId || !dataset) {
     console.error("Missing Sanity configuration:", {
       projectId: projectId ? "✓" : "✗",
       dataset: dataset ? "✓" : "✗",
+      token: token ? "✓" : "✗",
     });
     return (
       <div className="p-8 text-red-600">
@@ -36,11 +38,19 @@ export function SanityClientProvider({
     );
   }
 
+  if (!token) {
+    return (
+      <div className="p-8 text-yellow-600">
+        Warning: No API token found. Mutations will not work.
+      </div>
+    );
+  }
+
   return (
     <ResourceProvider
       projectId={projectId}
       dataset={dataset}
-      // No auth prop - users will be prompted to log in via Sanity OAuth
+      auth={{ token }}
       fallback={<div className="p-8">Loading...</div>}
     >
       {children}
