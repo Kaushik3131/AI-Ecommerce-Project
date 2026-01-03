@@ -57,7 +57,7 @@ jobs:
           
           gcloud builds submit . \
             --config=cloudbuild.yaml \
-            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}'),_NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}'),_NEXT_PUBLIC_SANITY_PROJECT_ID=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}'),_NEXT_PUBLIC_SANITY_DATASET=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}'),_NEXT_PUBLIC_SANITY_API_VERSION=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}'),_NEXT_PUBLIC_BASE_URL=$(trim '${{ secrets.NEXT_PUBLIC_BASE_URL }}')" \
+            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}'),_NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$(trim '${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}'),_NEXT_PUBLIC_SANITY_PROJECT_ID=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}'),_NEXT_PUBLIC_SANITY_DATASET=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}'),_NEXT_PUBLIC_SANITY_API_VERSION=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}'),_NEXT_PUBLIC_SANITY_API_TOKEN=$(trim '${{ secrets.NEXT_PUBLIC_SANITY_API_TOKEN }}'),_NEXT_PUBLIC_BASE_URL=$(trim '${{ secrets.NEXT_PUBLIC_BASE_URL }}')" \
             --timeout=900s
 
       # -------------------------
