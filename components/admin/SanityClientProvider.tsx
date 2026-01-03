@@ -16,11 +16,13 @@ export function SanityClientProvider({
   // Validate environment variables
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+  const token = process.env.NEXT_PUBLIC_SANITY_API_TOKEN;
 
   if (!projectId || !dataset) {
     console.error("Missing Sanity configuration:", {
       projectId: projectId ? "✓" : "✗",
       dataset: dataset ? "✓" : "✗",
+      token: token ? "✓" : "✗",
     });
     return (
       <div className="p-8 text-red-600">
@@ -30,10 +32,18 @@ export function SanityClientProvider({
     );
   }
 
+  // Warn if token is missing (mutations won't work)
+  if (!token) {
+    console.warn(
+      "⚠️ NEXT_PUBLIC_SANITY_API_TOKEN is missing. Admin mutations will not work.",
+    );
+  }
+
   return (
     <ResourceProvider
       projectId={projectId}
       dataset={dataset}
+      auth={token ? { token } : undefined}
       fallback={<div className="p-8">Loading...</div>}
     >
       {children}

@@ -13,6 +13,8 @@ steps:
       - --build-arg
       - NEXT_PUBLIC_SANITY_API_VERSION=${_NEXT_PUBLIC_SANITY_API_VERSION}
       - --build-arg
+      - NEXT_PUBLIC_SANITY_API_TOKEN=${_NEXT_PUBLIC_SANITY_API_TOKEN}
+      - --build-arg
       - NEXT_PUBLIC_BASE_URL=${_NEXT_PUBLIC_BASE_URL}
       - .
 
