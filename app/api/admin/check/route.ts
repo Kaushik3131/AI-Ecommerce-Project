@@ -15,17 +15,24 @@ export async function GET() {
       );
     }
 
+    console.log("[Admin Check] Clerk User ID:", userId);
+
     // Check if user exists in Sanity admin users
     const adminUser = await client.fetch(ADMIN_USER_BY_CLERK_ID_QUERY, {
       clerkUserId: userId,
     });
 
+    console.log("[Admin Check] Sanity Query Result:", adminUser);
+
     if (!adminUser) {
+      console.log("[Admin Check] No admin user found for:", userId);
       return NextResponse.json(
         { isAdmin: false, error: "Not authorized as admin" },
         { status: 403 },
       );
     }
+
+    console.log("[Admin Check] Admin user found:", adminUser.email);
 
     return NextResponse.json({
       isAdmin: true,

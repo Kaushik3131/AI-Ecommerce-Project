@@ -1,5 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { client } from "@/sanity/lib/client";
+import { ADMIN_USER_BY_CLERK_ID_QUERY } from "@/sanity/queries/adminUsers";
 
 const isProtectedRoute = createRouteMatcher([
   "/checkout",
@@ -22,20 +24,21 @@ export default clerkMiddleware(async (auth, req) => {
     // Additional check for admin routes
     if (req.nextUrl.pathname.startsWith("/admin")) {
       try {
-        // Call our admin check API
-        const checkUrl = new URL("/api/admin/check", req.url);
-        const response = await fetch(checkUrl, {
-          headers: {
-            Cookie: req.headers.get("cookie") || "",
-          },
+        console.log("[Middleware] Checking admin access for:", userId);
+
+        // Query Sanity directly instead of fetching API route
+        const adminUser = await client.fetch(ADMIN_USER_BY_CLERK_ID_QUERY, {
+          clerkUserId: userId,
         });
 
-        const data = await response.json();
+        console.log("[Middleware] Admin user found:", !!adminUser);
 
-        if (!data.isAdmin) {
-          // Redirect to unauthorized page
+        if (!adminUser) {
+          console.log("[Middleware] Redirecting to unauthorized");
           return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
+
+        console.log("[Middleware] Admin access granted for:", adminUser.email);
       } catch (error) {
         console.error("[Middleware Admin Check Error]:", error);
         // On error, redirect to unauthorized page for safety
