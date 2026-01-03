@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/checkout",
@@ -9,8 +10,38 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+
   if (isProtectedRoute(req)) {
-    await auth.protect();
+    // Require authentication for all protected routes
+    if (!userId) {
+      await auth.protect();
+      return;
+    }
+
+    // Additional check for admin routes
+    if (req.nextUrl.pathname.startsWith("/admin")) {
+      try {
+        // Call our admin check API
+        const checkUrl = new URL("/api/admin/check", req.url);
+        const response = await fetch(checkUrl, {
+          headers: {
+            Cookie: req.headers.get("cookie") || "",
+          },
+        });
+
+        const data = await response.json();
+
+        if (!data.isAdmin) {
+          // Redirect to unauthorized page
+          return NextResponse.redirect(new URL("/unauthorized", req.url));
+        }
+      } catch (error) {
+        console.error("[Middleware Admin Check Error]:", error);
+        // On error, redirect to unauthorized page for safety
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    }
   }
 });
 

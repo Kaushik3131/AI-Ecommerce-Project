@@ -16,11 +16,13 @@ export function SanityClientProvider({
   // Validate environment variables
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+  const token = process.env.NEXT_PUBLIC_SANITY_API_TOKEN;
 
   if (!projectId || !dataset) {
     console.error("Missing Sanity configuration:", {
       projectId: projectId ? "✓" : "✗",
       dataset: dataset ? "✓" : "✗",
+      token: token ? "✓" : "✗",
     });
     return (
       <div className="p-8 text-red-600">
@@ -34,6 +36,7 @@ export function SanityClientProvider({
     <ResourceProvider
       projectId={projectId}
       dataset={dataset}
+      auth={token ? { token } : undefined}
       fallback={<div className="p-8">Loading...</div>}
     >
       {children}
