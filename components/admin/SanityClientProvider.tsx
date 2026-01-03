@@ -34,7 +34,6 @@ export function SanityClientProvider({
     <ResourceProvider
       projectId={projectId}
       dataset={dataset}
-      // No auth prop - will use OAuth login flow
       fallback={<div className="p-8">Loading...</div>}
     >
       {children}
