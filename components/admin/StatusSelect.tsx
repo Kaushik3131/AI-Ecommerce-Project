@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useDocument, type DocumentHandle } from "@sanity/sdk-react";
+import { useState, useTransition } from "react";
 import {
   Select,
   SelectContent,
@@ -9,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ORDER_STATUS_CONFIG,
   getOrderStatus,
@@ -17,44 +15,54 @@ import {
 import { updateDraftField } from "@/lib/actions/admin-mutations";
 import { toast } from "sonner";
 
-interface StatusSelectProps extends DocumentHandle {}
+interface StatusSelectProps {
+  documentId: string;
+  currentStatus: string;
+}
 
-function StatusSelectContent(handle: StatusSelectProps) {
-  const { data: status } = useDocument({ ...handle, path: "status" });
-  const [isUpdating, setIsUpdating] = useState(false);
+export function StatusSelect({ documentId, currentStatus }: StatusSelectProps) {
+  // Optimistic UI: Track the "display" status separately
+  const [optimisticStatus, setOptimisticStatus] = useState(currentStatus);
+  const [isPending, startTransition] = useTransition();
 
-  const currentStatus = (status as string) ?? "paid";
-  const statusConfig = getOrderStatus(currentStatus);
+  const displayStatus = optimisticStatus || currentStatus;
+  const statusConfig = getOrderStatus(displayStatus);
   const StatusIcon = statusConfig.icon;
 
-  const handleStatusChange = async (value: string) => {
-    setIsUpdating(true);
+  const handleStatusChange = (value: string) => {
+    // OPTIMISTIC: Update UI immediately
+    setOptimisticStatus(value);
 
-    // Update the draft (not published)
-    const result = await updateDraftField(handle.documentId, "status", value);
+    // Start the server mutation in the background
+    startTransition(async () => {
+      const result = await updateDraftField(documentId, "status", value);
 
-    setIsUpdating(false);
-
-    if (result.success) {
-      toast.success(
-        "Status updated in draft. Click 'Publish Changes' to make it live.",
-      );
-    } else {
-      toast.error(`Update failed: ${result.error}`);
-    }
+      if (result.success) {
+        toast.success(
+          "Status updated in draft. Click 'Publish Changes' to make it live.",
+        );
+      } else {
+        // REVERT: If it failed, go back to the original status
+        setOptimisticStatus(currentStatus);
+        toast.error(`Update failed: ${result.error}`);
+      }
+    });
   };
 
   return (
     <Select
-      value={currentStatus}
+      value={displayStatus}
       onValueChange={handleStatusChange}
-      disabled={isUpdating}
+      disabled={isPending}
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue>
           <div className="flex items-center gap-2">
             <StatusIcon className="h-4 w-4" />
             {statusConfig.label}
+            {isPending && (
+              <span className="text-xs text-zinc-400">(Saving...)</span>
+            )}
           </div>
         </SelectValue>
       </SelectTrigger>
@@ -72,17 +80,5 @@ function StatusSelectContent(handle: StatusSelectProps) {
         })}
       </SelectContent>
     </Select>
-  );
-}
-
-function StatusSelectSkeleton() {
-  return <Skeleton className="h-10 w-[180px]" />;
-}
-
-export function StatusSelect(props: StatusSelectProps) {
-  return (
-    <Suspense fallback={<StatusSelectSkeleton />}>
-      <StatusSelectContent {...props} />
-    </Suspense>
   );
 }
