@@ -45,3 +45,4 @@ next-env.d.ts
 /list-models.mjs
 /docker-compose.yml
 /.gemini
+/CLIENT_PROPOSAL.md
