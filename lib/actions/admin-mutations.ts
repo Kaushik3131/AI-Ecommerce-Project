@@ -19,15 +19,24 @@ export async function updateDraftField(
       return { success: false, error: "Unauthorized" };
     }
 
+    console.log("[updateDraftField] Starting:", { documentId, path, value });
+
     // Always work with drafts
     const draftId = documentId.startsWith("drafts.")
       ? documentId
       : `drafts.${documentId}`;
 
+    console.log("[updateDraftField] Draft ID:", draftId);
+
     // Check if draft exists
     const existingDraft = await writeClient
       .getDocument(draftId)
       .catch(() => null);
+
+    console.log(
+      "[updateDraftField] Existing draft:",
+      existingDraft ? "Found" : "Not found",
+    );
 
     if (!existingDraft) {
       // Get published doc and create draft
@@ -36,25 +45,35 @@ export async function updateDraftField(
         .getDocument(publishedId)
         .catch(() => null);
 
+      console.log(
+        "[updateDraftField] Published doc:",
+        publishedDoc ? "Found" : "Not found",
+      );
+
       if (publishedDoc) {
-        await writeClient.create({
+        const newDraft = await writeClient.create({
           ...publishedDoc,
           _id: draftId,
         });
+        console.log("[updateDraftField] Created draft:", newDraft._id);
       } else {
         return { success: false, error: "Document not found" };
       }
     }
 
     // Update the draft
-    await writeClient
+    const patchResult = await writeClient
       .patch(draftId)
       .set({ [path]: value })
       .commit();
 
+    console.log("[updateDraftField] Patch result:", patchResult);
+
     // Revalidate admin pages only (not customer-facing pages)
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${documentId.replace("drafts.", "")}`);
+
+    console.log("[updateDraftField] Success! Revalidated paths");
 
     return { success: true, isDraft: true };
   } catch (error: unknown) {

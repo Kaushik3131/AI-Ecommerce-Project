@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { SanityClientProvider } from "@/components/admin/SanityClientProvider";
 
 const navItems = [
@@ -160,6 +161,7 @@ export default function AdminLayout({
           <div className="p-4 lg:p-8">{children}</div>
         </main>
       </div>
+      <Toaster position="bottom-center" />
     </SanityClientProvider>
   );
 }

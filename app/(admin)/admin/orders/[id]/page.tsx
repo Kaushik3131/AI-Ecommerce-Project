@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, MapPin, CreditCard, ExternalLink } from "lucide-react";
@@ -26,9 +25,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Draft Banner - shows when there are unpublished changes */}
-      <Suspense fallback={null}>
-        <DraftBannerServer documentId={id} />
-      </Suspense>
+      <DraftBannerServer documentId={id} />
 
       {/* Back Link */}
       <Link

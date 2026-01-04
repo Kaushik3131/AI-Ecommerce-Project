@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/constants/orderStatus";
 import { updateDraftField } from "@/lib/actions/admin-mutations";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface StatusSelectProps {
   documentId: string;
@@ -23,19 +24,25 @@ interface StatusSelectProps {
 export function StatusSelect({ documentId, currentStatus }: StatusSelectProps) {
   // Optimistic UI: Track the "display" status separately
   const [optimisticStatus, setOptimisticStatus] = useState(currentStatus);
-  const [isPending, startTransition] = useTransition();
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Reset optimistic state when currentStatus changes (e.g., after discard/publish)
+  useEffect(() => {
+    setOptimisticStatus(currentStatus);
+  }, [currentStatus]);
 
   const displayStatus = optimisticStatus || currentStatus;
   const statusConfig = getOrderStatus(displayStatus);
   const StatusIcon = statusConfig.icon;
 
   const handleStatusChange = (value: string) => {
-    // OPTIMISTIC: Update UI immediately
+    // INSTANT: Update UI immediately (no waiting!)
     setOptimisticStatus(value);
+    setIsSaving(true);
 
-    // Start the server mutation in the background
-    startTransition(async () => {
-      const result = await updateDraftField(documentId, "status", value);
+    // Fire and forget: Save to draft in background (completely async)
+    updateDraftField(documentId, "status", value).then((result) => {
+      setIsSaving(false);
 
       if (result.success) {
         toast.success(
@@ -50,35 +57,37 @@ export function StatusSelect({ documentId, currentStatus }: StatusSelectProps) {
   };
 
   return (
-    <Select
-      value={displayStatus}
-      onValueChange={handleStatusChange}
-      disabled={isPending}
-    >
-      <SelectTrigger className="w-[180px]">
-        <SelectValue>
-          <div className="flex items-center gap-2">
-            <StatusIcon className="h-4 w-4" />
-            {statusConfig.label}
-            {isPending && (
-              <span className="text-xs text-zinc-400">(Saving...)</span>
-            )}
-          </div>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => {
-          const Icon = config.icon;
-          return (
-            <SelectItem key={value} value={value}>
-              <div className="flex items-center gap-2">
-                <Icon className="h-4 w-4" />
-                {config.label}
-              </div>
-            </SelectItem>
-          );
-        })}
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2">
+      <Select value={displayStatus} onValueChange={handleStatusChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue>
+            <div className="flex items-center gap-2">
+              <StatusIcon className="h-4 w-4" />
+              {statusConfig.label}
+            </div>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => {
+            const Icon = config.icon;
+            return (
+              <SelectItem key={value} value={value}>
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4" />
+                  {config.label}
+                </div>
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select>
+
+      {isSaving && (
+        <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <span>Saving...</span>
+        </div>
+      )}
+    </div>
   );
 }
