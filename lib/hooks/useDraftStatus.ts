@@ -1,48 +1,39 @@
 "use client";
 
-import { useDocument } from "@sanity/sdk-react";
 import { useEffect, useState } from "react";
+import { checkDraftStatus } from "@/lib/actions/check-draft-status";
 
 /**
  * Hook to detect if a document has unpublished draft changes.
- * Returns the draft document if it exists and differs from published.
+ * Uses server action to avoid CORS issues on Cloud Run.
  */
 export function useDraftStatus(documentId: string) {
   const [hasDraft, setHasDraft] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
-
-  const publishedId = documentId.replace("drafts.", "");
-  const draftId = `drafts.${publishedId}`;
-
-  // Fetch both published and draft versions
-  const { data: published } = useDocument({
-    documentId: publishedId,
-    documentType: "order",
-  });
-
-  const { data: draft } = useDocument({
-    documentId: draftId,
-    documentType: "order",
-  });
+  const [draftId, setDraftId] = useState("");
+  const [publishedId, setPublishedId] = useState("");
 
   useEffect(() => {
-    setIsChecking(true);
+    let mounted = true;
 
-    // If draft exists and is different from published, we have unpublished changes
-    if (draft && published) {
-      // Simple comparison - in production you might want deep equality
-      const isDifferent = JSON.stringify(draft) !== JSON.stringify(published);
-      setHasDraft(isDifferent);
-    } else if (draft && !published) {
-      // Draft exists but no published version (new document)
-      setHasDraft(true);
-    } else {
-      // No draft or draft is identical
-      setHasDraft(false);
+    async function checkStatus() {
+      setIsChecking(true);
+      const result = await checkDraftStatus(documentId);
+
+      if (mounted) {
+        setHasDraft(result.hasDraft);
+        setDraftId(result.draftId);
+        setPublishedId(result.publishedId);
+        setIsChecking(false);
+      }
     }
 
-    setIsChecking(false);
-  }, [draft, published]);
+    checkStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, [documentId]);
 
   return {
     hasDraft,
