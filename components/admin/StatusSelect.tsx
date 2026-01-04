@@ -1,13 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
-import {
-  useDocument,
-  useEditDocument,
-  useApplyDocumentActions,
-  publishDocument,
-  type DocumentHandle,
-} from "@sanity/sdk-react";
+import { Suspense, useState } from "react";
+import { useDocument, type DocumentHandle } from "@sanity/sdk-react";
 import {
   Select,
   SelectContent,
@@ -16,27 +10,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ORDER_STATUS_CONFIG, getOrderStatus, type OrderStatusValue } from "@/lib/constants/orderStatus";
+import {
+  ORDER_STATUS_CONFIG,
+  getOrderStatus,
+} from "@/lib/constants/orderStatus";
+import { updateDraftField } from "@/lib/actions/admin-mutations";
+import { toast } from "sonner";
 
 interface StatusSelectProps extends DocumentHandle {}
 
 function StatusSelectContent(handle: StatusSelectProps) {
   const { data: status } = useDocument({ ...handle, path: "status" });
-  const editStatus = useEditDocument({ ...handle, path: "status" });
-  const apply = useApplyDocumentActions();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const currentStatus = (status as string) ?? "paid";
   const statusConfig = getOrderStatus(currentStatus);
   const StatusIcon = statusConfig.icon;
 
   const handleStatusChange = async (value: string) => {
-    editStatus(value);
-    // Auto-publish status changes so they take effect immediately
-    await apply(publishDocument(handle));
+    setIsUpdating(true);
+
+    // Update the draft (not published)
+    const result = await updateDraftField(handle.documentId, "status", value);
+
+    setIsUpdating(false);
+
+    if (result.success) {
+      toast.success(
+        "Status updated in draft. Click 'Publish Changes' to make it live.",
+      );
+    } else {
+      toast.error(`Update failed: ${result.error}`);
+    }
   };
 
   return (
-    <Select value={currentStatus} onValueChange={handleStatusChange}>
+    <Select
+      value={currentStatus}
+      onValueChange={handleStatusChange}
+      disabled={isUpdating}
+    >
       <SelectTrigger className="w-[180px]">
         <SelectValue>
           <div className="flex items-center gap-2">

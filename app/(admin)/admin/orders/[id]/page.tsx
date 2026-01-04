@@ -18,6 +18,8 @@ import {
   PublishButton,
   RevertButton,
 } from "@/components/admin";
+import { DraftBanner } from "@/components/admin/DraftBanner";
+import { useDraftStatus } from "@/lib/hooks/useDraftStatus";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 interface OrderDetailProjection {
@@ -348,6 +350,11 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Draft Banner - shows when there are unpublished changes */}
+      <Suspense fallback={null}>
+        <DraftBannerWrapper documentId={id} />
+      </Suspense>
+
       {/* Back Link */}
       <Link
         href="/admin/orders"
@@ -363,4 +370,13 @@ export default function OrderDetailPage({ params }: PageProps) {
       </Suspense>
     </div>
   );
+}
+
+// Wrapper component to handle draft detection
+function DraftBannerWrapper({ documentId }: { documentId: string }) {
+  const { hasDraft } = useDraftStatus(documentId);
+
+  if (!hasDraft) return null;
+
+  return <DraftBanner documentId={documentId} />;
 }
