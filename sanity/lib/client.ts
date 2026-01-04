@@ -7,7 +7,7 @@ export const client = createClient({
   dataset,
   apiVersion,
   useCdn: false, // Set to false if statically generating pages, using ISR or tag-based revalidation
-  perspective: "previewDrafts", // Changed from "published" to see drafts!
+  perspective: "drafts", // Changed from "previewDrafts" to see drafts!
   token: process.env.SANITY_API_TOKEN, // Need token to see drafts
 });
 
