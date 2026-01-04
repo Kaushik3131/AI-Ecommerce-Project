@@ -12,27 +12,26 @@ interface PriceEditorProps {
 }
 
 export function PriceEditor({ documentId, currentPrice }: PriceEditorProps) {
-  const [optimisticPrice, setOptimisticPrice] = useState(currentPrice);
+  const [value, setValue] = useState(currentPrice.toString());
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setOptimisticPrice(currentPrice);
+    setValue(currentPrice.toString());
   }, [currentPrice]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    if (isNaN(value)) return;
+  const handleBlur = () => {
+    const numValue = parseFloat(value);
+    if (Number.isNaN(numValue) || numValue === currentPrice) return;
 
-    setOptimisticPrice(value);
     setIsSaving(true);
 
-    updateDraftField(documentId, "price", value).then((result) => {
+    updateDraftField(documentId, "price", numValue).then((result) => {
       setIsSaving(false);
 
       if (result.success) {
         toast.success("Price updated in draft");
       } else {
-        setOptimisticPrice(currentPrice);
+        setValue(currentPrice.toString());
         toast.error(`Update failed: ${result.error}`);
       }
     });
@@ -44,8 +43,9 @@ export function PriceEditor({ documentId, currentPrice }: PriceEditorProps) {
         type="number"
         step="0.01"
         min="0"
-        value={optimisticPrice}
-        onChange={handleChange}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleBlur}
         placeholder="0.00"
       />
       {isSaving && <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />}

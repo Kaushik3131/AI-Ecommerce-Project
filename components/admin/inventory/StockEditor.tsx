@@ -12,27 +12,26 @@ interface StockEditorProps {
 }
 
 export function StockEditor({ documentId, currentStock }: StockEditorProps) {
-  const [optimisticStock, setOptimisticStock] = useState(currentStock);
+  const [value, setValue] = useState(currentStock.toString());
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setOptimisticStock(currentStock);
+    setValue(currentStock.toString());
   }, [currentStock]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (isNaN(value)) return;
+  const handleBlur = () => {
+    const numValue = parseInt(value);
+    if (Number.isNaN(numValue) || numValue === currentStock) return;
 
-    setOptimisticStock(value);
     setIsSaving(true);
 
-    updateDraftField(documentId, "stock", value).then((result) => {
+    updateDraftField(documentId, "stock", numValue).then((result) => {
       setIsSaving(false);
 
       if (result.success) {
         toast.success("Stock updated in draft");
       } else {
-        setOptimisticStock(currentStock);
+        setValue(currentStock.toString());
         toast.error(`Update failed: ${result.error}`);
       }
     });
@@ -43,8 +42,9 @@ export function StockEditor({ documentId, currentStock }: StockEditorProps) {
       <Input
         type="number"
         min="0"
-        value={optimisticStock}
-        onChange={handleChange}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleBlur}
         placeholder="0"
       />
       {isSaving && <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />}
