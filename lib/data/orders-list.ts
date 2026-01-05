@@ -28,7 +28,7 @@ export async function getOrders({
   }
 
   // Search filter
-  if (searchQuery && searchQuery.trim()) {
+  if (searchQuery?.trim()) {
     const search = searchQuery.trim().toLowerCase();
     filters.push(
       `(orderNumber match "${search}*" || email match "${search}*")`,
