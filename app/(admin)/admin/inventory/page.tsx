@@ -60,20 +60,11 @@ async function ProductListContent({
   // Fetch ALL items up to current page (to simulate infinite scroll)
   const totalToFetch = page * ITEMS_PER_PAGE;
 
-  console.log(
-    "[ProductListContent] Page:",
-    page,
-    "TotalToFetch:",
-    totalToFetch,
-  );
-
   const products = await getProducts({
     search,
     limit: totalToFetch + 1,
     offset: 0,
   });
-
-  console.log("[ProductListContent] Fetched:", products.length, "products");
 
   if (!products || products.length === 0) {
     return (
@@ -91,13 +82,6 @@ async function ProductListContent({
 
   const hasMore = products.length > totalToFetch;
   const displayProducts = hasMore ? products.slice(0, totalToFetch) : products;
-
-  console.log(
-    "[ProductListContent] HasMore:",
-    hasMore,
-    "Displaying:",
-    displayProducts.length,
-  );
 
   return (
     <>

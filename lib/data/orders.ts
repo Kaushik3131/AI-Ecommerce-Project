@@ -83,16 +83,12 @@ export async function getOrderById(
     const publishedId = orderId.replace("drafts.", "");
     const draftId = `drafts.${publishedId}`;
 
-    console.log("[getOrderById] Fetching:", { orderId, draftId, publishedId });
-
     // Try to get draft first (for admin preview)
     let order = await client.fetch<OrderDetail>(
       `*[_id == $draftId][0]${ORDER_PROJECTION}`,
       { draftId },
       { cache: "no-store" }, // Disable Next.js caching
     );
-
-    console.log("[getOrderById] Draft found:", !!order);
 
     // If no draft, get published version
     if (!order) {
@@ -101,11 +97,6 @@ export async function getOrderById(
         { publishedId },
         { cache: "no-store" },
       );
-      console.log("[getOrderById] Published found:", !!order);
-    }
-
-    if (order) {
-      console.log("[getOrderById] Returning order with status:", order.status);
     }
 
     return order;

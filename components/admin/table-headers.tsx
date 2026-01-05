@@ -12,7 +12,6 @@ interface TableHeaderColumn {
 const ORDER_TABLE_COLUMNS: TableHeaderColumn[] = [
   { label: "Order" },
   { label: "Customer", className: "hidden sm:table-cell" },
-  { label: "Items", className: "hidden text-center md:table-cell" },
   { label: "Total", className: "hidden sm:table-cell" },
   { label: "Status", className: "text-center sm:text-left" },
   { label: "Date", className: "hidden md:table-cell" },

@@ -24,21 +24,14 @@ export default clerkMiddleware(async (auth, req) => {
     // Additional check for admin routes
     if (req.nextUrl.pathname.startsWith("/admin")) {
       try {
-        console.log("[Middleware] Checking admin access for:", userId);
-
         // Query Sanity directly instead of fetching API route
         const adminUser = await client.fetch(ADMIN_USER_BY_CLERK_ID_QUERY, {
           clerkUserId: userId,
         });
 
-        console.log("[Middleware] Admin user found:", !!adminUser);
-
         if (!adminUser) {
-          console.log("[Middleware] Redirecting to unauthorized");
           return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
-
-        console.log("[Middleware] Admin access granted for:", adminUser.email);
       } catch (error) {
         console.error("[Middleware Admin Check Error]:", error);
         // On error, redirect to unauthorized page for safety

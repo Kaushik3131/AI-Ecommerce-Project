@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ interface AdminSearchProps {
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
   className?: string;
 }
 
@@ -17,6 +19,8 @@ export function AdminSearch({
   placeholder = "Search...",
   value,
   onChange,
+  onBlur,
+  onKeyDown,
   className,
 }: AdminSearchProps) {
   return (
@@ -27,6 +31,8 @@ export function AdminSearch({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
         className="pl-9 pr-9"
       />
       {value && (
@@ -42,42 +48,4 @@ export function AdminSearch({
       )}
     </div>
   );
-}
-
-// Debounce hook for search
-export function useDebouncedValue<T>(value: T, delay: number = 300): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// Hook to build GROQ filter for product search
-export function useProductSearchFilter(searchQuery: string) {
-  const debouncedQuery = useDebouncedValue(searchQuery, 300);
-
-  const filter = useMemo(() => {
-    if (!debouncedQuery.trim()) return undefined;
-    // Search in name - GROQ match operator
-    return `name match "*${debouncedQuery}*"`;
-  }, [debouncedQuery]);
-
-  return { filter, isSearching: searchQuery !== debouncedQuery };
-}
-
-// Hook to build GROQ filter for order search
-export function useOrderSearchFilter(searchQuery: string) {
-  const debouncedQuery = useDebouncedValue(searchQuery, 300);
-
-  const filter = useMemo(() => {
-    if (!debouncedQuery.trim()) return undefined;
-    // Search in orderNumber and email
-    return `orderNumber match "*${debouncedQuery}*" || email match "*${debouncedQuery}*"`;
-  }, [debouncedQuery]);
-
-  return { filter, isSearching: searchQuery !== debouncedQuery };
 }

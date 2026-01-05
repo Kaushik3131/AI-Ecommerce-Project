@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import {
   Sparkles,
   TrendingUp,
@@ -102,18 +102,12 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
 
 export function AIInsightsCard() {
   const [data, setData] = useState<InsightsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const hasFetched = useRef(false);
 
-  const fetchInsights = useCallback(async (isRefresh = false) => {
+  const fetchInsights = useCallback(async () => {
     try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
 
       const response = await fetch("/api/admin/insights");
@@ -128,16 +122,32 @@ export function AIInsightsCard() {
       setError(err instanceof Error ? err.message : "Failed to load insights");
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => {
-    // Prevent double fetch in React StrictMode
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-    fetchInsights();
-  }, [fetchInsights]);
+  // Show "Generate Insights" button if no data loaded yet
+  if (!data && !loading && !error) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+            <Sparkles className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            AI-Powered Insights
+          </h3>
+          <p className="mb-6 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+            Get intelligent analysis of your sales trends, inventory status, and
+            actionable recommendations powered by AI.
+          </p>
+          <Button onClick={fetchInsights} className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Generate Insights
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <AIInsightsCardSkeleton />;
@@ -202,11 +212,11 @@ export function AIInsightsCard() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => fetchInsights(true)}
-          disabled={refreshing}
+          onClick={fetchInsights}
+          disabled={loading}
           className="gap-2"
         >
-          {refreshing ? (
+          {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <RefreshCw className="h-4 w-4" />

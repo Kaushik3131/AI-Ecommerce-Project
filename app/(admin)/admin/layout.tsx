@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { SanityClientProvider } from "@/components/admin/SanityClientProvider";
 
 const navItems = [
   {
@@ -43,7 +42,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <SanityClientProvider>
+    <>
       <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
         {/* Mobile Header */}
         <div className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
@@ -162,6 +161,6 @@ export default function AdminLayout({
         </main>
       </div>
       <Toaster position="bottom-center" />
-    </SanityClientProvider>
+    </>
   );
 }

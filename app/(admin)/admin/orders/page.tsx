@@ -1,116 +1,31 @@
-"use client";
-
-import { Suspense, useState } from "react";
-import { useDocuments } from "@sanity/sdk-react";
+import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  OrderRow,
-  OrderRowSkeleton,
-  AdminSearch,
-  useOrderSearchFilter,
-  OrderTableHeader,
-} from "@/components/admin";
-import { ORDER_STATUS_TABS } from "@/lib/constants/orderStatus";
+import { OrderTableHeader } from "@/components/admin";
+import { Badge } from "@/components/ui/badge";
+import { getOrderStatus } from "@/lib/constants/orderStatus";
+import { formatPrice, formatOrderNumber } from "@/lib/utils";
+import { getOrders } from "@/lib/data/orders-list";
+import { OrdersFilters } from "@/components/admin/OrdersFilters";
 
-interface OrderListContentProps {
-  statusFilter: string;
-  searchFilter?: string;
+interface OrdersPageProps {
+  searchParams: Promise<{
+    status?: string;
+    search?: string;
+  }>;
 }
 
-function OrderListContent({
-  statusFilter,
-  searchFilter,
-}: OrderListContentProps) {
-  // Combine status and search filters
-  const filters: string[] = [];
-  if (statusFilter !== "all") {
-    filters.push(`status == "${statusFilter}"`);
-  }
-  if (searchFilter) {
-    filters.push(`(${searchFilter})`);
-  }
-  const filter = filters.length > 0 ? filters.join(" && ") : undefined;
+export default async function OrdersPage({ searchParams }: OrdersPageProps) {
+  const params = await searchParams;
+  const statusFilter = params.status || "all";
+  const searchQuery = params.search || "";
 
-  const {
-    data: orders,
-    hasMore,
-    loadMore,
-    isPending,
-  } = useDocuments({
-    documentType: "order",
-    filter,
-    orderings: [{ field: "_createdAt", direction: "desc" }],
-    batchSize: 20,
+  const orders = await getOrders({
+    statusFilter,
+    searchQuery,
+    limit: 50,
   });
-
-  if (!orders || orders.length === 0) {
-    const description = searchFilter
-      ? "Try adjusting your search terms."
-      : statusFilter === "all"
-        ? "Orders will appear here when customers make purchases."
-        : `No ${statusFilter} orders at the moment.`;
-
-    return (
-      <EmptyState
-        icon={ShoppingCart}
-        title="No orders found"
-        description={description}
-      />
-    );
-  }
-
-  return (
-    <>
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <Table>
-          <OrderTableHeader />
-          <TableBody>
-            {orders.map((handle) => (
-              <OrderRow key={handle.documentId} {...handle} />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {hasMore && (
-        <div className="mt-4 flex justify-center">
-          <Button
-            variant="outline"
-            onClick={() => loadMore()}
-            disabled={isPending}
-          >
-            {isPending ? "Loading..." : "Load More"}
-          </Button>
-        </div>
-      )}
-    </>
-  );
-}
-
-function OrderListSkeleton() {
-  return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <Table>
-        <OrderTableHeader />
-        <TableBody>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <OrderRowSkeleton key={i} />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-export default function OrdersPage() {
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const { filter: searchFilter, isSearching } =
-    useOrderSearchFilter(searchQuery);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -125,43 +40,72 @@ export default function OrdersPage() {
       </div>
 
       {/* Search and Tabs */}
-      <div className="flex flex-col gap-4">
-        <AdminSearch
-          placeholder="Search by order # or email..."
-          value={searchQuery}
-          onChange={setSearchQuery}
-          className="w-full sm:max-w-xs"
-        />
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList className="w-max">
-              {ORDER_STATUS_TABS.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="text-xs sm:text-sm"
-                >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
+      <OrdersFilters />
 
       {/* Order List */}
-      {isSearching ? (
-        <OrderListSkeleton />
+      {!orders || orders.length === 0 ? (
+        <EmptyState
+          icon={ShoppingCart}
+          title="No orders found"
+          description={
+            searchQuery
+              ? "Try adjusting your search terms."
+              : statusFilter === "all"
+                ? "Orders will appear here when customers make purchases."
+                : `No ${statusFilter} orders at the moment.`
+          }
+        />
       ) : (
-        <Suspense
-          key={`${statusFilter}-${searchFilter ?? ""}`}
-          fallback={<OrderListSkeleton />}
-        >
-          <OrderListContent
-            statusFilter={statusFilter}
-            searchFilter={searchFilter}
-          />
-        </Suspense>
+        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <Table>
+            <OrderTableHeader />
+            <TableBody>
+              {orders.map((order) => {
+                const status = getOrderStatus(order.status);
+                const StatusIcon = status.icon;
+
+                return (
+                  <tr
+                    key={order._id}
+                    className="border-b border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+                  >
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/orders/${order._id}`}
+                        className="font-medium text-zinc-900 hover:underline dark:text-zinc-100"
+                      >
+                        #{formatOrderNumber(order.orderNumber)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {order.email}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {formatPrice(order.total)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge
+                        className={`${status.color} flex w-fit items-center gap-1`}
+                      >
+                        <StatusIcon className="h-3 w-3" />
+                        {status.label}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );
