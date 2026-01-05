@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Main Frame / Outline -->
+  <path d="M6 10C6 8.89543 6.89543 8 8 8H24C25.1046 8 26 8.89543 26 10V18H6V10Z" fill="white" stroke="#3D2B1F" stroke-width="1.5"/>
+  
+  <!-- Seat Cushion -->
+  <path d="M6 18H26V22C26 23.1046 25.1046 24 24 24H8C6.89543 24 6 23.1046 6 22V18Z" fill="white" stroke="#3D2B1F" stroke-width="1.5"/>
+  
+  <!-- Left Armrest -->
+  <rect x="2" y="14" width="5" height="10" rx="1.5" fill="white" stroke="#3D2B1F" stroke-width="1.5"/>
+  
+  <!-- Right Armrest -->
+  <rect x="25" y="14" width="5" height="10" rx="1.5" fill="white" stroke="#3D2B1F" stroke-width="1.5"/>
+  
+  <!-- Depth Detail Line -->
+  <path d="M7 18H25" stroke="#3D2B1F" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Legs -->
+  <rect x="8" y="24" width="2" height="2" fill="#3D2B1F"/>
+  <rect x="22" y="24" width="2" height="2" fill="#3D2B1F"/>
+</svg>

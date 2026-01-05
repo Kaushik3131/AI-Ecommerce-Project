@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   description: "Premium furniture for your home",
   icons: {
-    icon: "/icon.png?v=3",
+    icon: "/icon.svg",
   },
 };
 
