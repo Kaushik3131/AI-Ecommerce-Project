@@ -84,3 +84,47 @@ This guide is designed to help you master the architectural details and technica
 2.  **Read `app/api/admin/insights/route.ts`**: See how Gemini is prompted.
 3.  **Check `Dockerfile`**: Understand how the app is containerized.
 4.  **Review `cloudbuild.yaml`**: Understand the build pipeline.
+
+---
+
+## 🔍 7. Detailed Codebase Structure Study Guide
+*Use this to master the "Where is what?" in your project.*
+
+### **A. The Routing Layer (`/app`)**
+*   **`(admin)` Group**: Contains all dashboard routes. Notice the `layout.tsx` here provides the sidebar/header only for admin pages.
+*   **`(app)` Group**: Contains the public-facing shop, cart, and checkout.
+*   **`api/`**: The backend heart.
+    *   `admin/insights/`: Gemini AI integration.
+    *   `payments/webhook/`: PhonePe payment verification logic.
+
+### **B. The UI Component Layer (`/components`)**
+*   **`admin/`**: High-logic components like `AIInsightsCard`, `StatCardServer`, and `OrdersFilters`. 
+    *   *Study Tip*: Look at how `AdminSearch.tsx` handles `onBlur` to trigger server-side filtering.
+*   **`app/`**: Customer-facing components like `ProductCard`, `CartItems`, and `CategoryTiles`.
+*   **`ui/`**: Basic building blocks (Buttons, Inputs, Badges) from Shadcn/UI.
+
+### **C. The Data & Logic Layer (`/lib`)**
+*   **`data/`**: This is where all Sanity queries live. 
+    *   *Key Files*: `orders-list.ts`, `stats.ts`, `low-stock.ts`.
+    *   *Why this matters*: Separating data fetching from UI components makes the code much cleaner and easier to test.
+*   **`actions/`**: Contains **Server Actions** for mutations (e.g., `admin-mutations.ts` for updating order status or deleting products).
+*   **`utils.ts`**: Formatting helpers (Currency, Dates, slug generation).
+
+### **D. The CMS Layer (`/sanity`)**
+*   **`schemaTypes/`**: Defines the "Shape" of your data. Look at `product.ts` and `order.ts`.
+*   **`lib/client.ts`**: The bridge between the app and the Sanity database. Note that we use a **Write Client** for server-side mutations.
+
+### **E. The Infrastructure Layer (Root Directory)**
+*   **`Dockerfile`**: Defines the multi-stage build environment.
+*   **`cloudbuild.yaml` & `.github/workflows/deploy.yml`**: The "Blueprint" for your CI/CD pipeline.
+*   **`next.config.ts`**: Configures image domains (Sanity/Clerk) and experimental features.
+
+---
+
+## 🎓 Final Study Advice
+When a recruiter asks: *"Walk me through the flow of a new order,"* you should be able to point to:
+1.  **UI**: `Cart.tsx` (Client)
+2.  **Action**: `createOrder` Server Action (Server)
+3.  **Data**: `lib/data/orders.ts` (Sanity Write)
+4.  **Payment**: `api/payments/route.ts` (PhonePe Redirect)
+5.  **Confirmation**: `api/payments/webhook` (Status Update)
