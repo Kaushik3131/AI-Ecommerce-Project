@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { checkDraftStatus } from "@/lib/actions/check-draft-status";
 import { DraftBanner } from "@/components/admin/DraftBanner";
+import { writeClient } from "@/sanity/lib/client";
 
 interface DraftBannerServerProps {
   documentId: string;
@@ -11,7 +12,14 @@ async function DraftBannerContent({ documentId }: DraftBannerServerProps) {
 
   if (!hasDraft) return null;
 
-  return <DraftBanner documentId={documentId} />;
+  // Check if this is a new product (never been published)
+  const publishedId = documentId.replace("drafts.", "");
+  const publishedDoc = await writeClient
+    .getDocument(publishedId)
+    .catch(() => null);
+  const isNewProduct = !publishedDoc; // If no published version exists, it's new
+
+  return <DraftBanner documentId={documentId} isNewProduct={isNewProduct} />;
 }
 
 /**

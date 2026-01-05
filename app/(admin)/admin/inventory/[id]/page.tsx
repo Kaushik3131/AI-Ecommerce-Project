@@ -3,9 +3,12 @@ import Image from "next/image";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { DraftBannerServer } from "@/components/admin/DraftBannerServer";
-import { PriceEditor } from "@/components/admin/inventory/PriceEditor";
-import { StockEditor } from "@/components/admin/inventory/StockEditor";
-import { FeaturedEditor } from "@/components/admin/inventory/FeaturedEditor";
+import {
+  PriceEditor,
+  StockEditor,
+  FeaturedEditor,
+  DescriptionEditor,
+} from "@/components/admin/inventory";
 import { getProductById } from "@/lib/data/products";
 import { notFound } from "next/navigation";
 
@@ -93,9 +96,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <h2 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">
               Description
             </h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {product.description || "No description"}
-            </p>
+            <DescriptionEditor
+              documentId={id}
+              currentDescription={product.description}
+            />
           </div>
         </div>
 
@@ -107,11 +111,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
               Pricing & Inventory
             </h2>
             <div className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label>Price (₹)</Label>
                 <PriceEditor documentId={id} currentPrice={product.price} />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Stock</Label>
                 <StockEditor documentId={id} currentStock={product.stock} />
               </div>

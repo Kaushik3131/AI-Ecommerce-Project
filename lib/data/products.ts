@@ -35,7 +35,7 @@ const PRODUCT_PROJECTION = `{
   description,
   price,
   stock,
-  "category": category->name,
+  "category": category->title,
   material,
   color,
   dimensions,
@@ -54,6 +54,41 @@ const PRODUCT_PROJECTION = `{
  * Fetch product data from Sanity (server-side only).
  * Checks for draft first, falls back to published.
  */
+/**
+ * Fetch a list of products from Sanity (server-side only).
+ * Supports search filtering and pagination.
+ */
+export async function getProducts(options?: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<ProductDetail[]> {
+  try {
+    const limit = options?.limit || 20; // Default 20 items per page
+    const offset = options?.offset || 0;
+
+    let query = `*[_type == "product"`;
+
+    // Add search filter if provided
+    if (options?.search) {
+      query += ` && (name match $search || description match $search)`;
+    }
+
+    query += `] | order(stock asc, name asc)[${offset}...${offset + limit}]${PRODUCT_PROJECTION}`;
+
+    const products = await client.fetch<ProductDetail[]>(
+      query,
+      options?.search ? { search: `*${options.search}*` } : {},
+      { cache: "no-store" },
+    );
+
+    return products;
+  } catch (error) {
+    console.error("[Get Products Error]:", error);
+    return [];
+  }
+}
+
 export async function getProductById(
   productId: string,
 ): Promise<ProductDetail | null> {
@@ -61,33 +96,18 @@ export async function getProductById(
     const publishedId = productId.replace("drafts.", "");
     const draftId = `drafts.${publishedId}`;
 
-    console.log("[getProductById] Fetching:", {
-      productId,
-      draftId,
-      publishedId,
-    });
-
-    // Try to get draft first (for admin preview)
     let product = await client.fetch<ProductDetail>(
       `*[_id == $draftId][0]${PRODUCT_PROJECTION}`,
       { draftId },
-      { cache: "no-store" }, // Disable Next.js caching
+      { cache: "no-store" },
     );
 
-    console.log("[getProductById] Draft found:", !!product);
-
-    // If no draft, get published version
     if (!product) {
       product = await client.fetch<ProductDetail>(
         `*[_id == $publishedId][0]${PRODUCT_PROJECTION}`,
         { publishedId },
         { cache: "no-store" },
       );
-      console.log("[getProductById] Published found:", !!product);
-    }
-
-    if (product) {
-      console.log("[getProductById] Returning product:", product.name);
     }
 
     return product;

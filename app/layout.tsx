@@ -16,9 +16,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     template: "%s",
-    default: "Admin",
+    default: "The Furniture Store",
   },
   description: "Premium furniture for your home",
+  icons: {
+    icon: "/icon.png?v=3",
+  },
 };
 
 export default function RootLayout({

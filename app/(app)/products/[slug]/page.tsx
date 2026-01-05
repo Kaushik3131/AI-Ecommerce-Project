@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { sanityFetch } from "@/sanity/lib/live";
 import { PRODUCT_BY_SLUG_QUERY } from "@/sanity/queries/products";
 import { ProductGallery } from "@/components/app/ProductGallery";
@@ -8,6 +9,28 @@ interface ProductPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  const { data: product } = await sanityFetch({
+    query: PRODUCT_BY_SLUG_QUERY,
+    params: { slug },
+  });
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  return {
+    title: `${product.name} | The Furniture Store`,
+    description: product.description || `Buy ${product.name} online`,
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {

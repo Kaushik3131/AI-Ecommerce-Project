@@ -19,61 +19,37 @@ export async function updateDraftField(
       return { success: false, error: "Unauthorized" };
     }
 
-    console.log("[updateDraftField] Starting:", { documentId, path, value });
-
-    // Always work with drafts
     const draftId = documentId.startsWith("drafts.")
       ? documentId
       : `drafts.${documentId}`;
 
-    console.log("[updateDraftField] Draft ID:", draftId);
-
-    // Check if draft exists
     const existingDraft = await writeClient
       .getDocument(draftId)
       .catch(() => null);
 
-    console.log(
-      "[updateDraftField] Existing draft:",
-      existingDraft ? "Found" : "Not found",
-    );
-
     if (!existingDraft) {
-      // Get published doc and create draft
       const publishedId = documentId.replace("drafts.", "");
       const publishedDoc = await writeClient
         .getDocument(publishedId)
         .catch(() => null);
 
-      console.log(
-        "[updateDraftField] Published doc:",
-        publishedDoc ? "Found" : "Not found",
-      );
-
       if (publishedDoc) {
-        const newDraft = await writeClient.create({
+        await writeClient.create({
           ...publishedDoc,
           _id: draftId,
         });
-        console.log("[updateDraftField] Created draft:", newDraft._id);
       } else {
         return { success: false, error: "Document not found" };
       }
     }
 
-    // Update the draft
-    const patchResult = await writeClient
+    await writeClient
       .patch(draftId)
       .set({ [path]: value })
       .commit();
 
-    console.log("[updateDraftField] Patch result:", patchResult);
-
-    // Revalidate admin pages only (not customer-facing pages)
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${documentId.replace("drafts.", "")}`);
-
-    console.log("[updateDraftField] Success! Revalidated paths");
 
     return { success: true, isDraft: true };
   } catch (error: unknown) {
@@ -162,6 +138,58 @@ export async function discardDraft(documentId: string) {
     return { success: true, discarded: true };
   } catch (error: unknown) {
     console.error("[Discard Draft Error]:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Create a new product as a DRAFT.
+ * The product won't appear on the frontend until published in Sanity Studio.
+ * Returns the new product ID for navigation.
+ */
+export async function createProduct(name: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Create a new product as DRAFT (not published)
+    const timestamp = Date.now();
+    const draftId = `drafts.product-${timestamp}`;
+
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const newProduct = await writeClient.create({
+      _id: draftId,
+      _type: "product",
+      name: name,
+      slug: {
+        _type: "slug",
+        current: `${slug}-${timestamp}`,
+      },
+      price: 0,
+      stock: 0,
+      featured: false,
+      assemblyRequired: false,
+    });
+
+    revalidatePath("/admin/inventory");
+
+    return {
+      success: true,
+      productId: newProduct._id,
+      isDraft: true,
+    };
+  } catch (error: unknown) {
+    console.error("[Create Product Error]:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

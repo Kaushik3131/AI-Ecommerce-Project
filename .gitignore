@@ -46,3 +46,5 @@ next-env.d.ts
 /docker-compose.yml
 /.gemini
 /CLIENT_PROPOSAL.md
+AI_AURA_ROADMAP.md
+TODO_INVENTORY_LIST.md
