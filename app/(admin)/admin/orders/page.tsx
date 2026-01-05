@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Table, TableBody } from "@/components/ui/table";
