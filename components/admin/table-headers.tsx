@@ -10,11 +10,11 @@ interface TableHeaderColumn {
 }
 
 const ORDER_TABLE_COLUMNS: TableHeaderColumn[] = [
-  { label: "Order" },
-  { label: "Customer", className: "hidden sm:table-cell" },
-  { label: "Total", className: "hidden sm:table-cell" },
-  { label: "Status", className: "text-center sm:text-left" },
-  { label: "Date", className: "hidden md:table-cell" },
+  { label: "Order", className: "px-4" },
+  { label: "Customer", className: "hidden px-4 sm:table-cell" },
+  { label: "Total", className: "hidden px-4 sm:table-cell" },
+  { label: "Status", className: "px-4 text-center sm:text-left" },
+  { label: "Date", className: "hidden px-4 md:table-cell" },
 ];
 
 export function OrderTableHeader() {

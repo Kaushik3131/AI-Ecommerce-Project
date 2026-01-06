@@ -79,17 +79,17 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         #{formatOrderNumber(order.orderNumber)}
                       </Link>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 sm:table-cell">
                       <span className="text-sm text-zinc-600 dark:text-zinc-400">
                         {order.email}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 sm:table-cell">
                       <span className="font-medium text-zinc-900 dark:text-zinc-100">
                         {formatPrice(order.total)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center sm:text-left">
                       <Badge
                         className={`${status.color} flex w-fit items-center gap-1`}
                       >
@@ -97,7 +97,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         {status.label}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 md:table-cell">
                       <span className="text-sm text-zinc-500 dark:text-zinc-400">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </span>

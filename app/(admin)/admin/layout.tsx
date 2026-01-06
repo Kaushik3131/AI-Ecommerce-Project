@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { AdminPageSkeleton } from "@/components/admin/AdminPageSkeleton";
 
 const navItems = [
   {
@@ -157,7 +158,9 @@ export default function AdminLayout({
 
         {/* Main content */}
         <main className="flex-1 pt-14 lg:ml-64 lg:pt-0">
-          <div className="p-4 lg:p-8">{children}</div>
+          <div className="p-4 lg:p-8">
+            <Suspense fallback={<AdminPageSkeleton />}>{children}</Suspense>
+          </div>
         </main>
       </div>
       <Toaster position="bottom-center" />
