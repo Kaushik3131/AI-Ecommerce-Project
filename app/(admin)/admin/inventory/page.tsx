@@ -9,6 +9,7 @@ import { InventorySearch } from "@/components/admin/InventorySearch";
 import { ProductRowServer } from "@/components/admin/ProductRowServer";
 import { ProductTableHeader } from "@/components/admin";
 import { LoadMoreButton } from "@/components/admin/LoadMoreButton";
+import { DashboardRefreshButton } from "@/components/admin/DashboardRefreshButton";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -117,7 +118,10 @@ export default async function InventoryPage({ searchParams }: PageProps) {
             Manage your product stock and pricing
           </p>
         </div>
-        <CreateProductButton />
+        <div className="flex gap-2">
+          <DashboardRefreshButton />
+          <CreateProductButton />
+        </div>
       </div>
 
       {/* Search */}

@@ -9,3 +9,4 @@ export { CreateProductButton } from "./CreateProductButton";
 export { AutoRefresh } from "./AutoRefresh";
 export { DashboardRefreshButton } from "./DashboardRefreshButton";
 export { OrdersFilters } from "./OrdersFilters";
+export { DashboardSkeleton } from "./DashboardSkeleton";

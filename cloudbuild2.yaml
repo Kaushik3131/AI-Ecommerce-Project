@@ -1,0 +1,42 @@
+steps:
+  # Build Docker image with build-time secrets from GCP Secret Manager
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
+      - --build-arg
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$$NEXT_PUBLIC_CLERK_KEY
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_PROJECT_ID=$$NEXT_PUBLIC_SANITY_PROJECT_ID
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_DATASET=$$NEXT_PUBLIC_SANITY_DATASET
+      - --build-arg
+      - NEXT_PUBLIC_SANITY_API_VERSION=$$NEXT_PUBLIC_SANITY_API_VERSION
+      - --build-arg
+      - NEXT_PUBLIC_BASE_URL=$$NEXT_PUBLIC_BASE_URL
+      - .
+    secretEnv:
+      - NEXT_PUBLIC_CLERK_KEY
+      - NEXT_PUBLIC_SANITY_PROJECT_ID
+      - NEXT_PUBLIC_SANITY_DATASET
+      - NEXT_PUBLIC_SANITY_API_VERSION
+      - NEXT_PUBLIC_BASE_URL
+
+# Define secrets from GCP Secret Manager
+availableSecrets:
+  secretManager:
+    - versionName: projects/${PROJECT_ID}/secrets/next-public-clerk-key/versions/latest
+      env: NEXT_PUBLIC_CLERK_KEY
+    - versionName: projects/${PROJECT_ID}/secrets/next-public-sanity-project-id/versions/latest
+      env: NEXT_PUBLIC_SANITY_PROJECT_ID
+    - versionName: projects/${PROJECT_ID}/secrets/next-public-sanity-dataset/versions/latest
+      env: NEXT_PUBLIC_SANITY_DATASET
+    - versionName: projects/${PROJECT_ID}/secrets/next-public-sanity-api-version/versions/latest
+      env: NEXT_PUBLIC_SANITY_API_VERSION
+    - versionName: projects/${PROJECT_ID}/secrets/next-public-base-url/versions/latest
+      env: NEXT_PUBLIC_BASE_URL
+
+# Push image to Artifact Registry
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest

@@ -1,0 +1,90 @@
+name: Build & Deploy to Cloud Run (GCP Secrets)
+
+# This workflow can ONLY be triggered manually (no automatic push triggers)
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual deployment'
+        required: false
+        default: 'Manual deployment'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  SERVICE_NAME: ai-ecommerce-app
+  REPOSITORY: ecommerce-repo
+  IMAGE: ai-ecommerce-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------
+      # 1️⃣ Checkout source code
+      # -------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # 2️⃣ Authenticate to GCP
+      # -------------------------
+      - name: Authenticate to GCP
+        run: |
+          cat <<'EOF' > key.json
+          ${{ secrets.GCP_SA_KEY }}
+          EOF
+
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project $PROJECT_ID
+          gcloud config set run/region $REGION
+
+      # -------------------------
+      # 3️⃣ Build & Push Image (Cloud Build with GCP Secrets)
+      # -------------------------
+      - name: Run Cloud Build with GCP Secret Manager
+        run: |
+          trim() { echo "$1" | xargs; }
+          
+          echo "🔨 Building Docker image with secrets from GCP Secret Manager..."
+          
+          # Submit build using cloudbuild2.yaml which fetches secrets from GCP
+          gcloud builds submit . \
+            --config=cloudbuild2.yaml \
+            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}')" \
+            --timeout=900s
+
+      # -------------------------
+      # 4️⃣ Deploy to Cloud Run (with GCP Secrets)
+      # -------------------------
+      - name: Deploy to Cloud Run with GCP Secret Manager
+        run: |
+          trim() { echo "$1" | xargs; }
+          
+          echo "🚀 Deploying to Cloud Run with runtime secrets from GCP Secret Manager..."
+          
+          gcloud run deploy $(trim '${{ env.SERVICE_NAME }}') \
+            --image $(trim '${{ env.REGION }}')-docker.pkg.dev/$(trim '${{ env.PROJECT_ID }}')/$(trim '${{ env.REPOSITORY }}')/$(trim '${{ env.IMAGE }}'):latest \
+            --platform managed \
+            --region $(trim '${{ env.REGION }}') \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 3 \
+            --update-secrets="CLERK_SECRET_KEY=clerk-secret-key:latest,SANITY_API_TOKEN=sanity-api-token:latest,GOOGLE_GENERATIVE_AI_API_KEY=google-ai-api-key:latest,PHONEPE_CLIENT_ID=phonepe-client-id:latest,PHONEPE_CLIENT_SECRET=phonepe-client-secret:latest,PHONEPE_MERCHANT_ID=phonepe-merchant-id:latest,PHONEPE_WEBHOOK_USERNAME=phonepe-webhook-username:latest,PHONEPE_WEBHOOK_PASSWORD=phonepe-webhook-password:latest" \
+            --set-env-vars="PHONEPE_CLIENT_VERSION=v1,PHONEPE_MODE=SANDBOX"
+
+      # -------------------------
+      # 5️⃣ Deployment Summary
+      # -------------------------
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "✅ Deployment successful!"
+          echo "📦 Service: ${{ env.SERVICE_NAME }}"
+          echo "🌍 Region: ${{ env.REGION }}"
+          echo "🔗 URL: https://${{ env.SERVICE_NAME }}-$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)')-${{ env.REGION }}.a.run.app"
+          echo "💡 Reason: ${{ github.event.inputs.reason }}"

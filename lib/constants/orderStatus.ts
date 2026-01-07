@@ -3,10 +3,16 @@ import {
   Truck,
   XCircle,
   CreditCard,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 
-export type OrderStatusValue = "paid" | "shipped" | "delivered" | "cancelled";
+export type OrderStatusValue =
+  | "pending"
+  | "paid"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
 
 export interface OrderStatusConfig {
   /** The status value/key */
@@ -27,6 +33,15 @@ export interface OrderStatusConfig {
 
 export const ORDER_STATUS_CONFIG: Record<OrderStatusValue, OrderStatusConfig> =
   {
+    pending: {
+      value: "pending",
+      label: "Pending",
+      color: "bg-yellow-100 text-yellow-800",
+      icon: Clock,
+      emoji: "⏳",
+      iconColor: "text-yellow-600 dark:text-yellow-400",
+      iconBgColor: "bg-yellow-100 dark:bg-yellow-900/30",
+    },
     paid: {
       value: "paid",
       label: "Paid",
@@ -67,7 +82,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatusValue, OrderStatusConfig> =
 
 /** All valid order status values */
 export const ORDER_STATUS_VALUES = Object.keys(
-  ORDER_STATUS_CONFIG
+  ORDER_STATUS_CONFIG,
 ) as OrderStatusValue[];
 
 /** Tabs for admin order filtering (includes "all" option) */
@@ -87,13 +102,13 @@ export const ORDER_STATUS_SANITY_LIST = ORDER_STATUS_VALUES.map((value) => ({
 
 /** Get order status config with fallback to "paid" */
 export const getOrderStatus = (
-  status: string | null | undefined
+  status: string | null | undefined,
 ): OrderStatusConfig =>
   ORDER_STATUS_CONFIG[status as OrderStatusValue] ?? ORDER_STATUS_CONFIG.paid;
 
 /** Get emoji display for status (for AI/chat) */
 export const getOrderStatusEmoji = (
-  status: string | null | undefined
+  status: string | null | undefined,
 ): string => {
   const config = getOrderStatus(status);
   return `${config.emoji} ${config.label}`;

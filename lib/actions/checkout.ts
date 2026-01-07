@@ -105,20 +105,11 @@ export async function createCheckoutSession(
       0,
     );
     const amountInPaise = Math.round(totalAmount * 100); // Convert to paise
-    console.log("=== CHECKOUT STEP 5: Amount calculated ===", {
-      totalAmount,
-      amountInPaise,
-    });
 
     // 6. Get user details
     const userEmail = user.emailAddresses[0]?.emailAddress ?? "";
     const userName =
       `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || userEmail;
-    console.log("=== CHECKOUT STEP 6: User details ===", {
-      userEmail,
-      userName,
-      userId,
-    });
 
     // 7. User details already extracted above
 
@@ -132,11 +123,9 @@ export async function createCheckoutSession(
     }
 
     const merchantOrderId = randomUUID();
-    console.log("=== CHECKOUT STEP 7: Generated Order ID ===", merchantOrderId);
 
     // Get or create customer in Sanity
     const customerId = await getOrCreateCustomer(userEmail, userName, userId);
-    console.log("=== CHECKOUT STEP 8: Customer created ===", customerId);
 
     // Store order metadata in Sanity BEFORE payment
     // This allows webhook to retrieve it later using merchantOrderId
@@ -174,11 +163,6 @@ export async function createCheckoutSession(
       createdAt: new Date().toISOString(), // Add creation timestamp
     });
 
-    console.log(
-      "=== CHECKOUT STEP 9: Pre-order created in Sanity ===",
-      merchantOrderId,
-    );
-
     // Prepare MetaInfo for PhonePe (for tracking & verification)
     // Using first 4 UDF fields for essential data
     const metaInfo = new MetaInfo(
@@ -189,18 +173,7 @@ export async function createCheckoutSession(
       "", // udf5: Reserved for future use
     );
 
-    console.log("=== CHECKOUT STEP 10: MetaInfo prepared ===", {
-      udf1: merchantOrderId,
-      udf2: userId,
-      udf3: userEmail,
-      udf4: amountInPaise.toString(),
-    });
-
     const transactionMessage = `Order: ${merchantOrderId} | Customer: ${userName} (${userId})`;
-    console.log(
-      "=== CHECKOUT STEP 11: Transaction message ===",
-      transactionMessage,
-    );
 
     const paymentRequest = StandardCheckoutPayRequest.builder()
       .merchantOrderId(merchantOrderId)
@@ -211,15 +184,9 @@ export async function createCheckoutSession(
       .message(transactionMessage)
       .build();
 
-    console.log("=== CHECKOUT STEP 12: Payment request built ===");
-
     // 9. Initiate payment with PhonePe
     const phonePeClient = getPhonePeClient();
     const response = await phonePeClient.pay(paymentRequest);
-
-    console.log("=== CHECKOUT STEP 13: PhonePe response received ===", {
-      redirectUrl: response.redirectUrl,
-    });
 
     return { success: true, url: response.redirectUrl ?? undefined };
   } catch (error) {

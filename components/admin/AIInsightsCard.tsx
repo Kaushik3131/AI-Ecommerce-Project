@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Sparkles,
   TrendingUp,
@@ -64,7 +64,7 @@ function AIInsightsCardSkeleton() {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600">
           <Sparkles className="h-5 w-5 text-white" />
         </div>
         <div>
@@ -118,6 +118,8 @@ export function AIInsightsCard() {
       }
 
       setData(result);
+      // Persist to sessionStorage
+      sessionStorage.setItem("adminInsights", JSON.stringify(result));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load insights");
     } finally {
@@ -125,12 +127,28 @@ export function AIInsightsCard() {
     }
   }, []);
 
+  // Load from sessionStorage on mount (no auto-fetch to save API calls)
+  useEffect(() => {
+    const cached = sessionStorage.getItem("adminInsights");
+    if (cached) {
+      try {
+        const parsedData = JSON.parse(cached);
+        setData(parsedData);
+      } catch {
+        // If parsing fails, clear invalid cache
+        sessionStorage.removeItem("adminInsights");
+      }
+    }
+    // Note: We don't auto-fetch here to save Gemini API calls
+    // Admin must manually click "Generate Insights" button
+  }, []);
+
   // Show "Generate Insights" button if no data loaded yet
   if (!data && !loading && !error) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600">
             <Sparkles className="h-8 w-8 text-white" />
           </div>
           <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -193,7 +211,7 @@ export function AIInsightsCard() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-200 p-6 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>

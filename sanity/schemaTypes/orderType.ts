@@ -76,7 +76,7 @@ export const orderType = defineType({
       name: "status",
       type: "string",
       group: "details",
-      initialValue: "paid",
+      initialValue: "pending",
       options: {
         list: ORDER_STATUS_SANITY_LIST,
         layout: "radio",
@@ -176,6 +176,34 @@ export const orderType = defineType({
       group: "details",
       readOnly: true,
       initialValue: () => new Date().toISOString(),
+    }),
+    defineField({
+      name: "updatedAt",
+      type: "datetime",
+      group: "details",
+      readOnly: true,
+      description: "Last update timestamp",
+    }),
+    defineField({
+      name: "cancelledAt",
+      type: "datetime",
+      group: "details",
+      readOnly: true,
+      description: "Cancellation timestamp (if cancelled)",
+    }),
+    defineField({
+      name: "cancellationReason",
+      type: "string",
+      group: "details",
+      readOnly: true,
+      description: "Reason for cancellation",
+    }),
+    defineField({
+      name: "failureReason",
+      type: "string",
+      group: "payment",
+      readOnly: true,
+      description: "Payment failure reason (if failed)",
     }),
   ],
   preview: {

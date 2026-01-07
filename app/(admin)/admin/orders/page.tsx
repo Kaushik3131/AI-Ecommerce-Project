@@ -10,6 +10,7 @@ import { getOrderStatus } from "@/lib/constants/orderStatus";
 import { formatPrice, formatOrderNumber } from "@/lib/utils";
 import { getOrders } from "@/lib/data/orders-list";
 import { OrdersFilters } from "@/components/admin/OrdersFilters";
+import { DashboardRefreshButton } from "@/components/admin/DashboardRefreshButton";
 
 interface OrdersPageProps {
   searchParams: Promise<{
@@ -32,13 +33,16 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">
-          Orders
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 sm:text-base">
-          Manage and track customer orders
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+            Orders
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 sm:text-base">
+            Manage and track customer orders
+          </p>
+        </div>
+        <DashboardRefreshButton />
       </div>
 
       {/* Search and Tabs */}

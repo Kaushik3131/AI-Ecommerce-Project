@@ -74,17 +74,25 @@ export async function POST(req: NextRequest) {
     });
 
     // 4. Handle different event types
+    console.log("=== PHONEPE WEBHOOK EVENT ===", {
+      event,
+      state: payload?.state,
+      code: payload?.paymentDetails?.[0]?.errorCode,
+    });
+
     switch (event) {
       case "checkout.order.completed":
         await handleOrderCompleted(payload);
         break;
 
       case "checkout.order.failed":
+      case "checkout.order.cancelled": // Handle cancellation explicitly
         await handleOrderFailed(payload);
         break;
 
       default:
         console.log("Unhandled event type:", event);
+        console.log("Full payload:", JSON.stringify(payload, null, 2));
     }
 
     // 5. Return success response

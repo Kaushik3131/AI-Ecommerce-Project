@@ -45,7 +45,7 @@ export type Order = {
     _key: string;
   }>;
   total?: number;
-  status?: "paid" | "shipped" | "delivered" | "cancelled";
+  status?: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
   customer?: {
     _ref: string;
     _type: "reference";
@@ -70,6 +70,10 @@ export type Order = {
   currency?: string;
   amountPaid?: number;
   createdAt?: string;
+  updatedAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  failureReason?: string;
 };
 
 export type Product = {
@@ -323,7 +327,7 @@ export type ORDERS_BY_USER_QUERYResult = Array<{
   _id: string;
   orderNumber: string | null;
   total: number | null;
-  status: "cancelled" | "delivered" | "paid" | "shipped" | null;
+  status: "cancelled" | "delivered" | "paid" | "pending" | "shipped" | null;
   createdAt: string | null;
   itemCount: number | null;
   itemNames: Array<string | null> | null;
@@ -353,7 +357,7 @@ export type ORDER_BY_ID_QUERYResult = {
     } | null;
   }> | null;
   total: number | null;
-  status: "cancelled" | "delivered" | "paid" | "shipped" | null;
+  status: "cancelled" | "delivered" | "paid" | "pending" | "shipped" | null;
   paymentStatus: string | null;
   phonePeTransactionId: string | null;
   phonePeOrderId: string | null;
@@ -376,7 +380,7 @@ export type RECENT_ORDERS_QUERYResult = Array<{
   orderNumber: string | null;
   email: string | null;
   total: number | null;
-  status: "cancelled" | "delivered" | "paid" | "shipped" | null;
+  status: "cancelled" | "delivered" | "paid" | "pending" | "shipped" | null;
   createdAt: string | null;
 }>;
 // Variable: ORDER_BY_STRIPE_PAYMENT_ID_QUERY
@@ -690,7 +694,7 @@ export type ORDERS_LAST_7_DAYS_QUERYResult = Array<{
   _id: string;
   orderNumber: string | null;
   total: number | null;
-  status: "cancelled" | "delivered" | "paid" | "shipped" | null;
+  status: "cancelled" | "delivered" | "paid" | "pending" | "shipped" | null;
   createdAt: string | null;
   itemCount: number | null;
   items: Array<{

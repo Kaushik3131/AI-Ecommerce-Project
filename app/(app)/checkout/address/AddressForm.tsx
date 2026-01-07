@@ -201,13 +201,8 @@ export function AddressForm() {
 
         {/* Submit Button */}
         <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/checkout")}
-            className="flex-1"
-          >
-            Back
+          <Button asChild variant="outline" className="flex-1">
+            <Link href="/checkout">Back</Link>
           </Button>
           <Button type="submit" disabled={isSubmitting} className="flex-1">
             {isSubmitting ? "Saving..." : "Continue to Payment"}

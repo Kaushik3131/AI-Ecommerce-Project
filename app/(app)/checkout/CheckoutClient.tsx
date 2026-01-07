@@ -100,11 +100,14 @@ export function CheckoutClient() {
             <XCircle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
             <div className="flex-1">
               <h3 className="font-semibold text-red-900 dark:text-red-100">
-                Payment Failed
+                {paymentError === "payment_cancelled"
+                  ? "Payment Cancelled"
+                  : "Payment Failed"}
               </h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                Your payment could not be completed. Please try again or contact
-                support if the issue persists.
+                {paymentError === "payment_cancelled"
+                  ? "You cancelled the payment. Your order has been cancelled and no charges were made."
+                  : "Your payment could not be completed. Please try again or contact support if the issue persists."}
               </p>
               {failedOrderId && (
                 <p className="mt-2 text-xs text-red-600 dark:text-red-400">

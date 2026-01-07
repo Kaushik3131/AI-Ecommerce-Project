@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { SuccessClient } from "./SuccessClient";
 import { getCheckoutSession } from "@/lib/actions/checkout";
-// import { markOrderAsPaid } from "@/lib/actions/complete-order"; // Disabled for Cloud Run
+import { cancelPendingOrder } from "@/lib/actions/cancel-order";
 
 export const metadata = {
   title: "Order Confirmed | AI-Ecom-Store",
@@ -34,15 +34,34 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
     redirect("/");
   }
 
-  // Check if payment was actually successful
+  // Check payment status
   const paymentStatus = result.session.paymentStatus?.toUpperCase();
 
-  if (paymentStatus !== "COMPLETED" && paymentStatus !== "PAID") {
-    // Payment failed or is still pending - redirect to checkout with error
+  // Handle different payment statuses
+  if (paymentStatus === "PENDING") {
+    // User returned to success page but payment is still pending
+    // This means they likely cancelled or navigated away from PhonePe
+    // Cancel the order
+    await cancelPendingOrder(orderId);
+
+    // Redirect back to checkout with cancellation message
+    redirect(`/checkout?error=payment_cancelled&orderId=${orderId}`);
+  }
+
+  if (
+    paymentStatus !== "COMPLETED" &&
+    paymentStatus !== "PAID" &&
+    paymentStatus !== "SUCCESS"
+  ) {
+    // Payment failed or was cancelled
     console.error("Payment not completed:", {
       orderId,
       paymentStatus,
     });
+
+    // Try to cancel if still pending
+    await cancelPendingOrder(orderId);
+
     redirect(`/checkout?error=payment_failed&orderId=${orderId}`);
   }
 
