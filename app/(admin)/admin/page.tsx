@@ -9,6 +9,7 @@ import {
   AutoRefresh,
   DashboardRefreshButton,
 } from "@/components/admin";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export default function AdminDashboard() {
   return (
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex gap-2">
+            <ModeToggle />
             <DashboardRefreshButton />
             <CreateProductButton />
           </div>

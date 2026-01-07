@@ -11,6 +11,7 @@ import { formatPrice, formatOrderNumber } from "@/lib/utils";
 import { getOrders } from "@/lib/data/orders-list";
 import { OrdersFilters } from "@/components/admin/OrdersFilters";
 import { DashboardRefreshButton } from "@/components/admin/DashboardRefreshButton";
+import { autoCancelOldPendingOrders } from "@/lib/actions/auto-cancel-orders";
 
 interface OrdersPageProps {
   searchParams: Promise<{
@@ -23,6 +24,9 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const params = await searchParams;
   const statusFilter = params.status || "all";
   const searchQuery = params.search || "";
+
+  // Auto-cancel pending orders older than 10 minutes
+  await autoCancelOldPendingOrders();
 
   const orders = await getOrders({
     statusFilter,
@@ -73,7 +77,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                 return (
                   <tr
                     key={order._id}
-                    className="border-b border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+                    className="cursor-pointer border-b border-zinc-100 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
                   >
                     <td className="px-4 py-3">
                       <Link
@@ -84,27 +88,41 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       </Link>
                     </td>
                     <td className="hidden px-4 py-3 sm:table-cell">
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <Link
+                        href={`/admin/orders/${order._id}`}
+                        className="block text-sm text-zinc-600 dark:text-zinc-400"
+                      >
                         {order.email}
-                      </span>
+                      </Link>
                     </td>
                     <td className="hidden px-4 py-3 sm:table-cell">
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <Link
+                        href={`/admin/orders/${order._id}`}
+                        className="block font-medium text-zinc-900 dark:text-zinc-100"
+                      >
                         {formatPrice(order.total)}
-                      </span>
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-center sm:text-left">
-                      <Badge
-                        className={`${status.color} flex w-fit items-center gap-1`}
+                      <Link
+                        href={`/admin/orders/${order._id}`}
+                        className="inline-block"
                       >
-                        <StatusIcon className="h-3 w-3" />
-                        {status.label}
-                      </Badge>
+                        <Badge
+                          className={`${status.color} flex w-fit items-center gap-1`}
+                        >
+                          <StatusIcon className="h-3 w-3" />
+                          {status.label}
+                        </Badge>
+                      </Link>
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <Link
+                        href={`/admin/orders/${order._id}`}
+                        className="block text-sm text-zinc-500 dark:text-zinc-400"
+                      >
                         {new Date(order.createdAt).toLocaleDateString()}
-                      </span>
+                      </Link>
                     </td>
                   </tr>
                 );
