@@ -23,6 +23,8 @@ env:
   SERVICE_NAME: ai-ecommerce-app
   REPOSITORY: ecommerce-repo
   IMAGE: ai-ecommerce-app
+  PHONEPE_CLIENT_VERSION: v1
+  PHONEPE_MODE: SANDBOX
 
 jobs:
   deploy:
@@ -77,4 +79,4 @@ jobs:
             --cpu 1 \
             --min-instances 0 \
             --max-instances 3 \
-            --set-env-vars "CLERK_SECRET_KEY=$(trim '${{ secrets.CLERK_SECRET_KEY }}'),SANITY_API_TOKEN=$(trim '${{ secrets.SANITY_API_TOKEN }}'),GOOGLE_GENERATIVE_AI_API_KEY=$(trim '${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}'),PHONEPE_CLIENT_ID=$(trim '${{ secrets.PHONEPE_CLIENT_ID }}'),PHONEPE_CLIENT_SECRET=$(trim '${{ secrets.PHONEPE_CLIENT_SECRET }}'),PHONEPE_CLIENT_VERSION=$(trim '${{ secrets.PHONEPE_CLIENT_VERSION }}'),PHONEPE_MERCHANT_ID=$(trim '${{ secrets.PHONEPE_MERCHANT_ID }}'),PHONEPE_MODE=$(trim '${{ secrets.PHONEPE_MODE }}'),PHONEPE_WEBHOOK_USERNAME=$(trim '${{ secrets.PHONEPE_WEBHOOK_USERNAME }}'),PHONEPE_WEBHOOK_PASSWORD=$(trim '${{ secrets.PHONEPE_WEBHOOK_PASSWORD }}')"
+            --set-env-vars "CLERK_SECRET_KEY=$(trim '${{ secrets.CLERK_SECRET_KEY }}'),SANITY_API_TOKEN=$(trim '${{ secrets.SANITY_API_TOKEN }}'),GOOGLE_GENERATIVE_AI_API_KEY=$(trim '${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}'),PHONEPE_CLIENT_ID=$(trim '${{ secrets.PHONEPE_CLIENT_ID }}'),PHONEPE_CLIENT_SECRET=$(trim '${{ secrets.PHONEPE_CLIENT_SECRET }}'),PHONEPE_CLIENT_VERSION=$(trim '${{ env.PHONEPE_CLIENT_VERSION }}'),PHONEPE_MERCHANT_ID=$(trim '${{ secrets.PHONEPE_MERCHANT_ID }}'),PHONEPE_MODE=$(trim '${{ env.PHONEPE_MODE }}'),PHONEPE_WEBHOOK_USERNAME=$(trim '${{ secrets.PHONEPE_WEBHOOK_USERNAME }}'),PHONEPE_WEBHOOK_PASSWORD=$(trim '${{ secrets.PHONEPE_WEBHOOK_PASSWORD }}')"

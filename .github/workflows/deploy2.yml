@@ -15,6 +15,8 @@ env:
   SERVICE_NAME: ai-ecommerce-app
   REPOSITORY: ecommerce-repo
   IMAGE: ai-ecommerce-app
+  PHONEPE_CLIENT_VERSION: v1
+  PHONEPE_MODE: SANDBOX
 
 jobs:
   deploy:
@@ -52,7 +54,7 @@ jobs:
           # Submit build using cloudbuild2.yaml which fetches secrets from GCP
           gcloud builds submit . \
             --config=cloudbuild2.yaml \
-            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}')" \
+            --substitutions="_REGION=$(trim '${{ env.REGION }}'),_REPOSITORY=$(trim '${{ env.REPOSITORY }}'),_IMAGE=$(trim '${{ env.IMAGE }}'),_SERVICE_NAME=$(trim '${{ env.SERVICE_NAME }}'),_PHONEPE_CLIENT_VERSION=$(trim '${{ env.PHONEPE_CLIENT_VERSION }}'),_PHONEPE_MODE=$(trim '${{ env.PHONEPE_MODE }}')" \
             --timeout=900s
 
       # -------------------------

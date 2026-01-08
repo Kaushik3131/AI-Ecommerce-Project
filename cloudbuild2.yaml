@@ -1,5 +1,7 @@
 steps:
-  # Build Docker image with build-time secrets from GCP Secret Manager
+  # ============================================================================
+  # STEP 1: Build Docker image with build-time secrets from GCP Secret Manager
+  # ============================================================================
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
@@ -23,6 +25,27 @@ steps:
       - NEXT_PUBLIC_SANITY_API_VERSION
       - NEXT_PUBLIC_BASE_URL
 
+  # ============================================================================
+  # STEP 2: Deploy to Cloud Run with runtime secrets from GCP Secret Manager
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
+      - --platform=managed
+      - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=3000
+      - --memory=1Gi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=3
+      - --update-secrets=CLERK_SECRET_KEY=clerk-secret-key:latest,SANITY_API_TOKEN=sanity-api-token:latest,GOOGLE_GENERATIVE_AI_API_KEY=google-ai-api-key:latest,PHONEPE_CLIENT_ID=phonepe-client-id:latest,PHONEPE_CLIENT_SECRET=phonepe-client-secret:latest,PHONEPE_MERCHANT_ID=phonepe-merchant-id:latest,PHONEPE_WEBHOOK_USERNAME=phonepe-webhook-username:latest,PHONEPE_WEBHOOK_PASSWORD=phonepe-webhook-password:latest
+      - --set-env-vars=PHONEPE_CLIENT_VERSION=${_PHONEPE_CLIENT_VERSION},PHONEPE_MODE=${_PHONEPE_MODE}
+
 # Define secrets from GCP Secret Manager
 availableSecrets:
   secretManager:
@@ -40,3 +63,9 @@ availableSecrets:
 # Push image to Artifact Registry
 images:
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
+
+# Default substitution values (can be overridden in Cloud Build trigger)
+substitutions:
+  _PHONEPE_CLIENT_VERSION: v1
+  _PHONEPE_MODE: SANDBOX
+
