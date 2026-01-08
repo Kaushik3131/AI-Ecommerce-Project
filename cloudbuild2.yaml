@@ -23,7 +23,15 @@ steps:
       - NEXT_PUBLIC_BASE_URL
 
   # ============================================================================
-  # STEP 2: Deploy to Cloud Run with runtime secrets from GCP Secret Manager
+  # STEP 2: Push Docker image to Artifact Registry
+  # ============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:latest
+
+  # ============================================================================
+  # STEP 3: Deploy to Cloud Run with runtime secrets from GCP Secret Manager
   # ============================================================================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
