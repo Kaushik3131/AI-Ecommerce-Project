@@ -69,3 +69,7 @@ substitutions:
   _PHONEPE_CLIENT_VERSION: v1
   _PHONEPE_MODE: SANDBOX
 
+# Logging configuration (required when using custom service account)
+options:
+  logging: CLOUD_LOGGING_ONLY
+
