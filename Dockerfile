@@ -53,6 +53,15 @@ ENV PHONEPE_WEBHOOK_PASSWORD="build-placeholder"
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Debug: Print environment variables to verify they're set
+RUN echo "=== Build-time Environment Variables ===" && \
+    echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" && \
+    echo "NEXT_PUBLIC_SANITY_PROJECT_ID: $NEXT_PUBLIC_SANITY_PROJECT_ID" && \
+    echo "NEXT_PUBLIC_SANITY_DATASET: $NEXT_PUBLIC_SANITY_DATASET" && \
+    echo "NEXT_PUBLIC_SANITY_API_VERSION: $NEXT_PUBLIC_SANITY_API_VERSION" && \
+    echo "NEXT_PUBLIC_BASE_URL: $NEXT_PUBLIC_BASE_URL" && \
+    echo "========================================"
+
 # Generate Sanity types (optional, can be done in CI/CD)
 # RUN pnpm run typegen
 
