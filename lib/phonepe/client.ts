@@ -1,4 +1,4 @@
-import { StandardCheckoutClient, Env } from 'pg-sdk-node';
+import { StandardCheckoutClient, Env } from "pg-sdk-node";
 
 /**
  * PhonePe Client Wrapper
@@ -8,22 +8,23 @@ import { StandardCheckoutClient, Env } from 'pg-sdk-node';
 
 // Validate environment variables
 if (!process.env.PHONEPE_CLIENT_ID) {
-  throw new Error('PHONEPE_CLIENT_ID is not defined');
+  throw new Error("PHONEPE_CLIENT_ID is not defined");
 }
 
 if (!process.env.PHONEPE_CLIENT_SECRET) {
-  throw new Error('PHONEPE_CLIENT_SECRET is not defined');
+  throw new Error("PHONEPE_CLIENT_SECRET is not defined");
 }
 
 if (!process.env.PHONEPE_CLIENT_VERSION) {
-  throw new Error('PHONEPE_CLIENT_VERSION is not defined');
+  throw new Error("PHONEPE_CLIENT_VERSION is not defined");
 }
 
 // Configuration
 const clientId = process.env.PHONEPE_CLIENT_ID;
 const clientSecret = process.env.PHONEPE_CLIENT_SECRET;
 const clientVersion = parseInt(process.env.PHONEPE_CLIENT_VERSION, 10);
-const environment = process.env.PHONEPE_MODE === 'PRODUCTION' ? Env.PRODUCTION : Env.SANDBOX;
+const environment =
+  process.env.PHONEPE_MODE === "PRODUCTION" ? Env.PRODUCTION : Env.SANDBOX;
 
 // Singleton instance
 let phonePeClient: StandardCheckoutClient | null = null;
@@ -38,7 +39,7 @@ export function getPhonePeClient(): StandardCheckoutClient {
       clientId,
       clientSecret,
       clientVersion,
-      environment
+      environment,
     );
   }
   return phonePeClient;
@@ -54,13 +55,13 @@ export function getPhonePeClient(): StandardCheckoutClient {
 export function verifyWebhookSignature(
   authHeader: string,
   username: string,
-  password: string
+  password: string,
 ): boolean {
-  const crypto = require('crypto');
+  const crypto = require("crypto");
   const expectedHash = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(`${username}:${password}`)
-    .digest('hex');
-  
+    .digest("hex");
+
   return authHeader === expectedHash;
 }

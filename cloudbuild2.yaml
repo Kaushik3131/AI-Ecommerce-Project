@@ -65,11 +65,6 @@ availableSecrets:
     - versionName: projects/${PROJECT_ID}/secrets/next-public-base-url/versions/latest
       env: NEXT_PUBLIC_BASE_URL
 
-# Default substitution values (can be overridden in Cloud Build trigger)
-substitutions:
-  _PHONEPE_CLIENT_VERSION: v1
-  _PHONEPE_MODE: TEST
-
 # Logging configuration (required when using custom service account)
 options:
   logging: CLOUD_LOGGING_ONLY
