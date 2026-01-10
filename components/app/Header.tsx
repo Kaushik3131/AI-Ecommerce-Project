@@ -197,7 +197,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative"
+            className="relative cursor-pointer"
             onClick={openCart}
           >
             <ShoppingBag className="h-5 w-5" />

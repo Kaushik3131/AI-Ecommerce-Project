@@ -219,34 +219,46 @@ export const SEARCH_PRODUCTS_QUERY = defineQuery(`*[
 /**
  * Filter products - ordered by name (A-Z)
  * Returns up to 4 images for hover preview in product cards
+ * Supports pagination with $offset and $limit parameters
  */
 export const FILTER_PRODUCTS_BY_NAME_QUERY = defineQuery(
-  `*[${PRODUCT_FILTER_CONDITIONS}] | order(name asc) ${FILTERED_PRODUCT_PROJECTION}`
+  `*[${PRODUCT_FILTER_CONDITIONS}] | order(name asc) [$offset...$limit] ${FILTERED_PRODUCT_PROJECTION}`,
 );
 
 /**
  * Filter products - ordered by price ascending
  * Returns up to 4 images for hover preview in product cards
+ * Supports pagination with $offset and $limit parameters
  */
 export const FILTER_PRODUCTS_BY_PRICE_ASC_QUERY = defineQuery(
-  `*[${PRODUCT_FILTER_CONDITIONS}] | order(price asc) ${FILTERED_PRODUCT_PROJECTION}`
+  `*[${PRODUCT_FILTER_CONDITIONS}] | order(price asc) [$offset...$limit] ${FILTERED_PRODUCT_PROJECTION}`,
 );
 
 /**
  * Filter products - ordered by price descending
  * Returns up to 4 images for hover preview in product cards
+ * Supports pagination with $offset and $limit parameters
  */
 export const FILTER_PRODUCTS_BY_PRICE_DESC_QUERY = defineQuery(
-  `*[${PRODUCT_FILTER_CONDITIONS}] | order(price desc) ${FILTERED_PRODUCT_PROJECTION}`
+  `*[${PRODUCT_FILTER_CONDITIONS}] | order(price desc) [$offset...$limit] ${FILTERED_PRODUCT_PROJECTION}`,
 );
 
 /**
  * Filter products - ordered by relevance (when searching)
  * Uses score() for search term matching
  * Returns up to 4 images for hover preview in product cards
+ * Supports pagination with $offset and $limit parameters
  */
 export const FILTER_PRODUCTS_BY_RELEVANCE_QUERY = defineQuery(
-  `*[${PRODUCT_FILTER_CONDITIONS}] | ${RELEVANCE_SCORE} | order(_score desc, name asc) ${FILTERED_PRODUCT_PROJECTION}`
+  `*[${PRODUCT_FILTER_CONDITIONS}] | ${RELEVANCE_SCORE} | order(_score desc, name asc) [$offset...$limit] ${FILTERED_PRODUCT_PROJECTION}`,
+);
+
+/**
+ * Count total products matching filters
+ * Used for pagination to know total count
+ */
+export const COUNT_FILTERED_PRODUCTS_QUERY = defineQuery(
+  `count(*[${PRODUCT_FILTER_CONDITIONS}])`,
 );
 
 /**

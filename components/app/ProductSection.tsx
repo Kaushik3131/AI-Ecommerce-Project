@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { PanelLeftClose, PanelLeft } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { PanelLeftClose, PanelLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductFilters } from "./ProductFilters";
 import { ProductGrid } from "./ProductGrid";
+import { fetchMoreProducts } from "@/lib/actions/fetch-more-products";
 import type {
   ALL_CATEGORIES_QUERYResult,
   FILTER_PRODUCTS_BY_NAME_QUERYResult,
@@ -14,21 +16,54 @@ interface ProductSectionProps {
   categories: ALL_CATEGORIES_QUERYResult;
   products: FILTER_PRODUCTS_BY_NAME_QUERYResult;
   searchQuery: string;
+  totalCount: number;
+  currentPage: number;
 }
+
+const PRODUCTS_PER_PAGE = 12;
 
 export function ProductSection({
   categories,
-  products,
+  products: initialProducts,
   searchQuery,
+  totalCount,
 }: ProductSectionProps) {
+  const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(true);
-  const [displayCount, setDisplayCount] = useState(12);
+  const [products, setProducts] = useState(initialProducts);
+  const [page, setPage] = useState(1);
+  const [isPending, startTransition] = useTransition();
 
-  const displayedProducts = products.slice(0, displayCount);
-  const hasMore = displayCount < products.length;
+  // Reset products when filters change (initialProducts change)
+  useEffect(() => {
+    setProducts(initialProducts);
+    setPage(1);
+  }, [initialProducts]);
 
-  const loadMore = () => {
-    setDisplayCount((prev) => prev + 12);
+  const hasMore = products.length < totalCount;
+
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    const offset = page * PRODUCTS_PER_PAGE;
+    const limit = offset + PRODUCTS_PER_PAGE;
+
+    startTransition(async () => {
+      const moreProducts = await fetchMoreProducts({
+        searchQuery,
+        categorySlug: searchParams.get("category") || "",
+        color: searchParams.get("color") || "",
+        material: searchParams.get("material") || "",
+        minPrice: Number(searchParams.get("minPrice")) || 0,
+        maxPrice: Number(searchParams.get("maxPrice")) || 0,
+        inStock: searchParams.get("inStock") === "true",
+        sort: searchParams.get("sort") || "name",
+        offset,
+        limit,
+      });
+
+      setProducts((prev) => [...prev, ...moreProducts]);
+      setPage(nextPage);
+    });
   };
 
   return (
@@ -36,8 +71,8 @@ export function ProductSection({
       {/* Header with results count and filter toggle */}
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Showing {displayedProducts.length} of {products.length}{" "}
-          {products.length === 1 ? "product" : "products"}
+          Showing {products.length} of {totalCount}{" "}
+          {totalCount === 1 ? "product" : "products"}
           {searchQuery && (
             <span>
               {" "}
@@ -83,20 +118,30 @@ export function ProductSection({
 
         {/* Product Grid - expands to full width when filters hidden */}
         <main className="flex-1 transition-all duration-300">
-          <ProductGrid products={displayedProducts} />
+          <ProductGrid products={products} />
 
           {/* Load More Button */}
           {hasMore && (
             <div className="mt-12 flex justify-center">
               <Button
                 onClick={loadMore}
+                disabled={isPending}
                 size="lg"
-                className="gap-2 bg-linear-to-r from-(--festive-primary) to-red-700 px-8 py-6 text-base font-bold shadow-lg shadow-(--festive-primary)/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-(--festive-primary)/30"
+                className="gap-2 bg-linear-to-r from-(--festive-primary) to-red-700 px-8 py-6 text-base font-bold shadow-lg shadow-(--festive-primary)/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-(--festive-primary)/30 disabled:opacity-50 disabled:hover:scale-100"
               >
-                Load More Products
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-sm">
-                  {products.length - displayCount} remaining
-                </span>
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Load More Products
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-sm">
+                      {totalCount - products.length} remaining
+                    </span>
+                  </>
+                )}
               </Button>
             </div>
           )}

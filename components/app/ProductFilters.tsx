@@ -96,7 +96,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   };
 
   const handleClearFilters = () => {
-    router.push("/", { scroll: false });
+    router.push("/shop", { scroll: false });
   };
 
   const clearSingleFilter = (key: string) => {
@@ -209,7 +209,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           >
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="cursor-pointer">
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category._id} value={category.slug ?? ""}>
@@ -240,7 +240,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           >
             <SelectValue placeholder="All Colors" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="cursor-pointer">
             <SelectItem value="all">All Colors</SelectItem>
             {COLORS.map((color) => (
               <SelectItem key={color.value} value={color.value}>
@@ -271,7 +271,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           >
             <SelectValue placeholder="All Materials" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="cursor-pointer">
             <SelectItem value="all">All Materials</SelectItem>
             {MATERIALS.map((material) => (
               <SelectItem key={material.value} value={material.value}>
@@ -343,7 +343,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="cursor-pointer">
             {SORT_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}

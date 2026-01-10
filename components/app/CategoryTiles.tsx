@@ -34,8 +34,8 @@ export function CategoryTiles({
         {/* All Products tile */}
         <button
           type="button"
-          onClick={() => handleCategoryClick("/")}
-          className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 ${
+          onClick={() => handleCategoryClick("/shop")}
+          className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 cursor-pointer ${
             !activeCategory
               ? "ring-2 ring-amber-500 ring-offset-2 dark:ring-offset-zinc-900"
               : "hover:ring-2 hover:ring-zinc-300 hover:ring-offset-2 dark:hover:ring-zinc-600 dark:hover:ring-offset-zinc-900"
@@ -71,8 +71,10 @@ export function CategoryTiles({
             <button
               key={category._id}
               type="button"
-              onClick={() => handleCategoryClick(`/?category=${category.slug}`)}
-              className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 ${
+              onClick={() =>
+                handleCategoryClick(`/shop?category=${category.slug}`)
+              }
+              className={`group relative flex-shrink-0 overflow-hidden rounded-xl transition-all duration-300 cursor-pointer ${
                 isActive
                   ? "ring-2 ring-amber-500 ring-offset-2 dark:ring-offset-zinc-900"
                   : "hover:ring-2 hover:ring-zinc-300 hover:ring-offset-2 dark:hover:ring-zinc-600 dark:hover:ring-offset-zinc-900"

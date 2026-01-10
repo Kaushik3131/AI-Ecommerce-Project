@@ -6,6 +6,7 @@ import {
   FILTER_PRODUCTS_BY_PRICE_ASC_QUERY,
   FILTER_PRODUCTS_BY_PRICE_DESC_QUERY,
   FILTER_PRODUCTS_BY_RELEVANCE_QUERY,
+  COUNT_FILTERED_PRODUCTS_QUERY,
 } from "@/sanity/queries/products";
 import { ALL_CATEGORIES_QUERY } from "@/sanity/queries/categories";
 import { ProductSection } from "@/components/app/ProductSection";
@@ -44,6 +45,11 @@ export default async function HomePage({ searchParams }: PageProps) {
   const sort = params.sort ?? "name";
   const inStock = params.inStock === "true";
 
+  // Pagination settings - always start with first page
+  const PRODUCTS_PER_PAGE = 12;
+  const offset = 0;
+  const limit = PRODUCTS_PER_PAGE;
+
   // Select query based on sort parameter
   const getQuery = () => {
     // If searching and sort is relevance, use relevance query
@@ -63,9 +69,25 @@ export default async function HomePage({ searchParams }: PageProps) {
     }
   };
 
-  // Fetch products with filters (server-side via GROQ)
+  // Fetch products with filters and pagination (server-side via GROQ)
   const { data: products } = await sanityFetch({
     query: getQuery(),
+    params: {
+      searchQuery,
+      categorySlug,
+      color,
+      material,
+      minPrice,
+      maxPrice,
+      inStock,
+      offset,
+      limit,
+    },
+  });
+
+  // Fetch total count of products matching filters
+  const { data: totalCount } = await sanityFetch({
+    query: COUNT_FILTERED_PRODUCTS_QUERY,
     params: {
       searchQuery,
       categorySlug,
@@ -88,16 +110,26 @@ export default async function HomePage({ searchParams }: PageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      {/* Background Pattern */}
+      <div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#d4d4d8_1px,transparent_1px),linear-gradient(to_bottom,#d4d4d8_1px,transparent_1px)] bg-[size:40px_40px] dark:bg-[linear-gradient(to_right,#3f3f46_1px,transparent_1px),linear-gradient(to_bottom,#3f3f46_1px,transparent_1px)]"
+        style={{ zIndex: 0 }}
+      />
       {/* Featured Products Carousel */}
-      {featuredProducts.length > 0 && (
-        <Suspense fallback={<FeaturedCarouselSkeleton />}>
-          <FeaturedCarousel products={featuredProducts} />
-        </Suspense>
-      )}
+      <div className="relative" style={{ zIndex: 1 }}>
+        {featuredProducts.length > 0 && (
+          <Suspense fallback={<FeaturedCarouselSkeleton />}>
+            <FeaturedCarousel products={featuredProducts} />
+          </Suspense>
+        )}
+      </div>
 
       {/* Page Banner */}
-      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+      <div
+        className="relative border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80"
+        style={{ zIndex: 1 }}
+      >
         <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Shop {categorySlug ? categorySlug : "All Products"}
@@ -118,12 +150,15 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       <div
         id="products-section"
-        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        style={{ zIndex: 1 }}
       >
         <ProductSection
           categories={categories}
           products={products}
           searchQuery={searchQuery}
+          totalCount={totalCount}
+          currentPage={1}
         />
       </div>
     </div>
