@@ -51,3 +51,4 @@ next-env.d.ts
 schema.json
 setup-gcp-secrets.sh
 landing_page_demo_stitch.txt
+additional-products.ndjson
