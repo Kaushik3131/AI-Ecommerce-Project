@@ -22,14 +22,22 @@ export function ProductSection({
   searchQuery,
 }: ProductSectionProps) {
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [displayCount, setDisplayCount] = useState(12);
+
+  const displayedProducts = products.slice(0, displayCount);
+  const hasMore = displayCount < products.length;
+
+  const loadMore = () => {
+    setDisplayCount((prev) => prev + 12);
+  };
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header with results count and filter toggle */}
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {products.length} {products.length === 1 ? "product" : "products"}{" "}
-          found
+          Showing {displayedProducts.length} of {products.length}{" "}
+          {products.length === 1 ? "product" : "products"}
           {searchQuery && (
             <span>
               {" "}
@@ -75,7 +83,23 @@ export function ProductSection({
 
         {/* Product Grid - expands to full width when filters hidden */}
         <main className="flex-1 transition-all duration-300">
-          <ProductGrid products={products} />
+          <ProductGrid products={displayedProducts} />
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="mt-12 flex justify-center">
+              <Button
+                onClick={loadMore}
+                size="lg"
+                className="gap-2 bg-linear-to-r from-(--festive-primary) to-red-700 px-8 py-6 text-base font-bold shadow-lg shadow-(--festive-primary)/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-(--festive-primary)/30"
+              >
+                Load More Products
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-sm">
+                  {products.length - displayCount} remaining
+                </span>
+              </Button>
+            </div>
+          )}
         </main>
       </div>
     </div>

@@ -82,6 +82,17 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* === Festive Landing Page Theme === */
+:root {
+  --festive-primary: #d94c25; /* Terracotta red */
+  --festive-secondary: #f4a261; /* Saffron orange */
+  --festive-gold: #d4af37;
+  --festive-gold-light: #f9e5b8;
+  --festive-bg-light: #fff9f0; /* Warm cream */
+  --festive-bg-dark: #1a0f0f; /* Deep brown-black */
+  --festive-saffron: #ff9933;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -123,4 +134,87 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* === Festive Animations === */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes float-reverse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(15px);
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 7s ease-in-out 3s infinite;
+}
+.animate-float-reverse {
+  animation: float-reverse 8s ease-in-out 1s infinite;
+}
+.animate-flicker {
+  animation: flicker 2s infinite;
+}
+.animate-shimmer {
+  animation: shimmer 2.5s infinite linear;
+}
+.animate-ripple {
+  animation: ripple 2s infinite;
+}
+
+/* === Pattern Background from Reference === */
+.pattern-bg {
+  background-color: #fff9f0;
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAP94XtbBRNodU4fvBMwnS3S2G22HUhLiW8Ckfe5IQlDZ1UMXRQDPyjGQxS0bhhkWy_g7eIlcv6LG5TamqEgv3vrT2vebxwXNIy4Odkv4JiMD9T7YZGS7q4YE6HiKgUkUCdyjBJZ66gDOaa8ajDxlAN5XX9s2AtwueClkI-D1jCiGD2bol2mCU4iMcwXrPgIHHCBikilUP4kb6Q-9YKPZVjnEgSUYvVWf3juxgEe9xYe2CE_iSMj4xqHuahinmEImQt-aKju5UvRnpG);
+}
+
+.dark .pattern-bg {
+  background-color: #1a0f0f;
+  background-image: none;
 }

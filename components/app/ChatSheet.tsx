@@ -27,6 +27,7 @@ export function ChatSheet() {
   const { isSignedIn } = useAuth();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { messages, sendMessage, status } = useChat();
   const isLoading = status === "streaming" || status === "submitted";
@@ -36,6 +37,16 @@ export function ChatSheet() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  // Auto-focus input when chat opens
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure the sheet is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
 
   // Handle pending message - send it when chat opens
   useEffect(() => {
@@ -146,6 +157,7 @@ export function ChatSheet() {
         <div className="border-t border-zinc-200 px-4 py-4 dark:border-zinc-800">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about our furniture..."
