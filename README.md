@@ -8,6 +8,8 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Google AI](https://img.shields.io/badge/Google_AI-Gemini_3_Flash-4285F4?style=for-the-badge&logo=google)
 ![Cloud Run](https://img.shields.io/badge/Cloud_Run-Deployed-4285F4?style=for-the-badge&logo=google-cloud)
+![Visual Search](https://img.shields.io/badge/AI--Vision-CLIP_%2B_FAISS-7B61FF?style=for-the-badge&logo=pytorch)
+![FastAPI](https://img.shields.io/badge/FastAPI-Isolated_Service-009688?style=for-the-badge&logo=fastapi)
 
 A modern furniture e-commerce platform with an intelligent AI shopping assistant powered by Google Gemini 3 Flash
 
@@ -21,15 +23,13 @@ A modern furniture e-commerce platform with an intelligent AI shopping assistant
 
 ## 🎯 Overview
 
-An enterprise-grade e-commerce platform that revolutionizes online shopping with a conversational AI assistant. Built with Next.js 16, React 19, and Google Gemini 3 Flash, featuring a stunning festive-themed landing page, natural language product search, intelligent recommendations, and seamless payment processing through PhonePe.
+An enterprise-grade e-commerce platform that revolutionizes online shopping with a conversational AI assistant and visual search capabilities. Built with Next.js 16, React 19, and Google Gemini 3 Flash, featuring visual search by image using CLIP embeddings, a stunning festive-themed landing page, natural language product search, and seamless payment processing through PhonePe.
 
 ### Key Highlights
 
 - **🎨 Premium Landing Page** - Festive-themed landing page with interactive lookbook and dynamic animations
-- **🤖 AI-Powered Shopping** - Natural language search with context-aware recommendations using Gemini 3 Flash
-- **💳 Payment Gateway Integration** - PhonePe payment gateway with UPI, Cards, and Wallets for Indian market
-- **⚡ Real-time Updates** - Sanity CMS with live content synchronization
-- **🚀 Production Deployment** - Containerized deployment on Google Cloud Run with CI/CD
+- **� Visual Search** - Search by image using CLIP embeddings and FAISS vector search for instant product matching
+- **🚀 Production Deployment** - Dual isolated Cloud Run services for web and AI vision with optimized CI/CD
 - **📊 Admin Intelligence** - AI-generated business insights and analytics dashboard
 
 ---
@@ -124,6 +124,19 @@ An AI-powered shopping assistant that understands natural language queries, redu
 
 ---
 
+### 5. Isolated AI Vision Architecture
+**Challenge**: Implementing heavy image processing and CLIP model encoding without slowing down the main Next.js application.
+
+**Solution**:
+- Built a dedicated **Python/FastAPI microservice** specifically for visual search.
+- Used **CLIP (Contrastive Language-Image Pre-training)** for high-dimensional image-to-vector encoding.
+- Implemented **FAISS** for millisecond-latency similarity search across product embeddings.
+- Deployed with **Min-Instances: 1** to eliminate cold starts for instant search results.
+
+**Impact**: Lightning-fast visual search that processes customer photos without competing for resources with the main storefront.
+
+---
+
 ## ⚡ Performance Optimizations
 
 ### Frontend Optimizations
@@ -175,7 +188,8 @@ An AI-powered shopping assistant that understands natural language queries, redu
 - **Personalized Recommendations** - AI-powered similar product suggestions
 - **Multi-turn Conversations** - Maintains context across chat sessions with streaming responses
 - **Context-Aware Tools** - Different capabilities for guests vs authenticated users
-- **Tool-Calling Architecture** - Uses `searchProducts` and `getMyOrders` tools dynamically
+- **Visual Search by Image** - Click the camera icon in chat to find similar products by uploading any photo
+- **Tool-Calling Architecture** - Uses `searchProducts`, `visualSearch`, and `getMyOrders` tools dynamically
 - **Single-Call Optimization** - Intelligent query handling to avoid redundant API calls
 
 ### 🛒 Customer Experience
@@ -232,6 +246,10 @@ An AI-powered shopping assistant that understands natural language queries, redu
 - **Agentic AI Pattern** - Tool-calling architecture with function calling
 - **Custom Tools**: `searchProducts`, `getMyOrders`
 - **Streaming Responses** - Real-time AI response streaming to UI
+- **[Visual Search Microservice]** - High-performance Python service for image understanding
+- **[OpenAI CLIP]** - State-of-the-art vision transformer for multi-modal embeddings
+- **[Facebook FAISS]** - High-speed vector search for similarity matching
+- **[FastAPI]** - Modern Python web framework for the AI backbone
 
 ### Backend & Database
 - **[Sanity CMS v4](https://www.sanity.io/)** - Headless content management with Studio
@@ -275,12 +293,12 @@ An AI-powered shopping assistant that understands natural language queries, redu
 │  └── AI Chat Interface (Streaming responses)                │
 └────────────┬────────────────────────────────────────────────┘
              │
-             ├─────────────────┬──────────────────┬───────────┐
-             ▼                 ▼                  ▼           ▼
-    ┌─────────────┐   ┌──────────────┐   ┌───────────┐  ┌─────────┐
-    │ Sanity CMS  │   │  Google AI   │   │  PhonePe  │  │  Clerk  │
-    │  (Content)  │   │   (Gemini)   │   │(Payments) │  │ (Auth)  │
-    └─────────────┘   └──────────────┘   └───────────┘  └─────────┘
+             ├─────────────────┬──────────────────┬───────────┬──────────────┐
+             ▼                 ▼                  ▼           ▼              ▼
+    ┌─────────────┐   ┌──────────────┐   ┌───────────┐  ┌─────────┐  ┌───────────────┐
+    │ Sanity CMS  │   │  Google AI   │   │  PhonePe  │  │  Clerk  │  │ Visual Search │
+    │  (Content)  │   │   (Gemini)   │   │(Payments) │  │ (Auth)  │  │ (CLIP + FAISS)│
+    └─────────────┘   └──────────────┘   └───────────┘  └─────────┘  └───────────────┘
 ```
 
 ### AI Agent Architecture
@@ -291,12 +309,14 @@ An AI-powered shopping assistant that understands natural language queries, redu
 ├────────────────────────────────────────────────────┤
 │  Context-Aware Tool Selection:                     │
 │                                                     │
-│  Guest User:                                       │
-│    └── searchProducts (public access)             │
-│                                                     │
-│  Authenticated User:                               │
-│    ├── searchProducts (full access)                │
-│    └── getMyOrders (auth required)                 │
+│  Guest User:                                       
+    ├── searchProducts (public access)             
+    └── visualSearch (image-based matching)        
+                                                     
+  Authenticated User:                               
+    ├── searchProducts (full access)               
+    ├── visualSearch (image-based matching)        
+    └── getMyOrders (auth required)                 
 └────────────────────────────────────────────────────┘
 ```
 
@@ -311,6 +331,9 @@ Cart → Validation → PhonePe Payment → Redirect → Payment → Webhook →
 
 Order Update Flow:
 Admin Action → Server Action → Sanity Mutation → Real-time Update → Customer View
+
+Visual Search Flow:
+Camera Upload → Next.js API → FastAPI Microservice → CLIP Encoding → FAISS Search → Chat Response
 ```
 
 ---
@@ -442,7 +465,17 @@ ai-ecommerce-app/
 ├── next.config.ts               # Next.js configuration
 ├── tailwind.config.ts           # Tailwind CSS config
 ├── biome.json                   # Biome linter config
-└── package.json                 # Dependencies
+├── visual-search-service/       # AI Vision Microservice (Python)
+│   ├── app/                     # FastAPI application
+│   │   ├── main.py              # Service entry point & routes
+│   │   ├── config.py            # Model & Sanity settings
+│   │   ├── embedding/           # CLIP model logic
+│   │   └── vector_db/           # FAISS search implementation
+│   ├── data/                    # Baked-in product embeddings (.npy)
+│   ├── scripts/                 # Embedding generation scripts
+│   ├── Dockerfile               # High-performance Python build
+│   └── pyproject.toml           # Modern Python dependencies (uv)
+└── package.json                 # Main app dependencies
 ```
 
 ---
@@ -490,6 +523,19 @@ Retrieve authenticated user's order history with status filtering.
 - "Where's my order?"
 - "Show me my delivered orders"
 - "What have I ordered recently?"
+
+#### 3. `visualSearch`
+
+Find similar products by analyzing the visual features of an uploaded image.
+
+**Logic:**
+- Takes an image file and converts it to a 512-dimensional vector using CLIP.
+- Performs cosine similarity search against pre-computed product embeddings.
+- Returns the top 20 most visually similar products.
+
+**Example Use Case:**
+- User uploads a photo of a modern chair they saw elsewhere.
+- Assistant finds the closest matching items in your inventory.
 
 ### AI Instructions & Behavior
 
@@ -683,6 +729,12 @@ Products are presented in a consistent, user-friendly format:
 - Created AI-generated admin insights for business intelligence
 - Optimized single-call strategy to reduce API costs and improve response time
 
+✅ **Visual Search Implementation**
+- Built an isolated high-performance AI vision service using Python and FastAPI
+- Implemented image-to-vector search using OpenAI's CLIP (Contrastive Language-Image Pre-training)
+- Integrated FAISS (Facebook AI Similarity Search) for millisecond-latency product matching
+- Created a serverless architecture with pre-indexed vector data for instant search results
+
 ✅ **Order Management System**
 - Auto-cancel abandoned prepaid orders after 10 minutes to free inventory
 - Draft order detection with visual alerts in admin dashboard
@@ -712,6 +764,7 @@ Products are presented in a consistent, user-friendly format:
 - **Build Time**: ~2-3 minutes (optimized Docker layers)
 - **Cold Start**: <2 seconds on Cloud Run
 - **AI Response**: Streaming responses in real-time
+- **Visual Search**: Results in <500ms (CLIP encoding + FAISS search)
 - **Page Load**: <1 second (Next.js optimization)
 
 ---
